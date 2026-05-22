@@ -84,7 +84,14 @@ export async function updateSpace(
 
   const { data: space, error } = await supabase
     .from('spaces')
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update({
+      name: data.name,
+      description: data.description,
+      is_private: data.is_private,
+      icon: data.icon,
+      cover_image: data.cover_image,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', spaceId)
     .select('slug')
     .single()

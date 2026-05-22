@@ -8,16 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Pin, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-
-type PostItem = {
-  id: string
-  title: string
-  content: string
-  created_at: string
-  is_pinned: boolean
-  profiles: { username: string; display_name: string | null; avatar_url: string | null } | null
-}
+import { loadMorePosts, type PostItem } from '@/lib/actions/posts'
 
 interface LoadMorePostsProps {
   spaceId: string
@@ -30,21 +21,15 @@ export function LoadMorePosts({ spaceId, spaceSlug, initialPosts, pageSize = 20 
   const [posts, setPosts] = useState<PostItem[]>(initialPosts)
   const [hasMore, setHasMore] = useState(initialPosts.length === pageSize)
   const [pending, startTransition] = useTransition()
-  const supabase = createClient()
 
   function loadMore() {
     startTransition(async () => {
       const oldest = posts[posts.length - 1]
-      const { data } = await supabase
-        .from('posts')
-        .select('id, title, content, created_at, is_pinned, profiles!author_id(username, display_name, avatar_url)')
-        .eq('space_id', spaceId)
-        .or(`created_at.lt.${oldest.created_at},and(created_at.eq.${oldest.created_at},id.lt.${oldest.id})`)
-        .order('created_at', { ascending: false })
-        .order('id', { ascending: false })
-        .limit(pageSize)
-
-      const newPosts = (data ?? []) as unknown as PostItem[]
+      const { posts: newPosts } = await loadMorePosts(
+        spaceId,
+        { created_at: oldest.created_at, id: oldest.id },
+        pageSize
+      )
       setPosts(prev => [...prev, ...newPosts])
       setHasMore(newPosts.length === pageSize)
     })

@@ -69,9 +69,11 @@ export function NotificationDropdown({ onClose, onCountChange }: NotificationDro
   async function markRead(id: string) {
     const notif = notifications.find(n => n.id === id)
     if (!notif || notif.is_read) return
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
     const table = supabase.from('notifications')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (table as unknown as any).update({ is_read: true }).eq('id', id)
+    await (table as unknown as any).update({ is_read: true }).eq('id', id).eq('user_id', user.id)
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
     onCountChange(-1)
   }
@@ -106,7 +108,9 @@ export function NotificationDropdown({ onClose, onCountChange }: NotificationDro
         ) : (
           notifications.map(notif => {
             const data = notif.data as Record<string, string | undefined>
-            const href = data.post_id ? `/spaces/${data.space_slug}/posts/${data.post_id}` : '/'
+            const slugOk = data.space_slug && /^[a-z0-9-]+$/.test(data.space_slug)
+            const idOk = data.post_id && /^[0-9a-f-]{36}$/.test(data.post_id)
+            const href = slugOk && idOk ? `/spaces/${data.space_slug}/posts/${data.post_id}` : '/'
             return (
               <Link
                 key={notif.id}

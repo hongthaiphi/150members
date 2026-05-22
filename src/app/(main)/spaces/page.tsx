@@ -21,14 +21,21 @@ export default async function SpacesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Current user's memberships (needed before filtering)
+  const { data: memberships } = user
+    ? await supabase.from('space_members').select('space_id').eq('user_id', user.id)
+    : { data: [] }
+  const memberSpaceIds = new Set((memberships as Array<{ space_id: string }> | null)?.map(m => m.space_id) ?? [])
+
   const { data: spaces } = await supabase
     .from('spaces')
     .select('id, name, slug, description, icon, is_private')
     .order('created_at', { ascending: false })
 
   // Get member counts
+  const visibleSpaces = (spaces ?? []).filter(s => !s.is_private || memberSpaceIds.has(s.id))
   const spacesWithCount: SpaceWithCount[] = await Promise.all(
-    (spaces ?? []).map(async (space) => {
+    visibleSpaces.map(async (space) => {
       const { count } = await supabase
         .from('space_members')
         .select('*', { count: 'exact', head: true })
@@ -37,14 +44,9 @@ export default async function SpacesPage() {
     })
   )
 
-  // Current user's memberships
-  const { data: memberships } = user
-    ? await supabase.from('space_members').select('space_id').eq('user_id', user.id)
-    : { data: [] }
-  const memberSpaceIds = new Set((memberships as Array<{ space_id: string }> | null)?.map(m => m.space_id) ?? [])
-
   const mySpaces = spacesWithCount.filter(s => memberSpaceIds.has(s.id))
-  const otherSpaces = spacesWithCount.filter(s => !memberSpaceIds.has(s.id))
+  // Only show public spaces or spaces the user is a member of in "Khám phá"
+  const otherSpaces = spacesWithCount.filter(s => !memberSpaceIds.has(s.id) && !s.is_private)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

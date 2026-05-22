@@ -9,6 +9,13 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   if (!user) return null
   if (user.id === otherUserId) return null
 
+  const { data: otherProfile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', otherUserId)
+    .single()
+  if (!otherProfile) return null
+
   const { data: myConvs } = await supabase
     .from('conversation_participants')
     .select('conversation_id')
@@ -50,6 +57,14 @@ export async function sendMessage(conversationId: string, content: string) {
 
   const trimmed = content.trim()
   if (!trimmed) return { error: 'Tin nhắn không được để trống' }
+
+  const { data: member } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .single()
+  if (!member) return { error: 'Không có quyền gửi tin nhắn' }
 
   const { error } = await supabase.from('messages').insert({
     conversation_id: conversationId,
