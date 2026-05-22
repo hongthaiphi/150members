@@ -122,6 +122,9 @@ export async function joinSpace(spaceId: string, slug: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  const { data: space } = await supabase.from('spaces').select('is_private').eq('id', spaceId).single()
+  if (space?.is_private) return { error: 'Không thể tự tham gia space riêng tư' }
+
   const { error } = await supabase
     .from('space_members')
     .insert({ space_id: spaceId, user_id: user.id })

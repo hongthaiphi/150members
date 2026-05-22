@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const protectedRoutes = ['/profile', '/settings', '/spaces', '/messages', '/admin']
-const authRoutes = ['/login', '/register', '/forgot-password', '/reset-password']
+const authRoutes = ['/login', '/register', '/forgot-password']
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -34,17 +34,36 @@ export async function middleware(request: NextRequest) {
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r))
   const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r))
 
+  function redirectWithCookies(url: URL) {
+    const res = NextResponse.redirect(url)
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) => res.cookies.set(name, value))
+    return res
+  }
+
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('redirectTo', pathname)
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url)
   }
 
   if (isAuthRoute && user) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
-    return NextResponse.redirect(url)
+    return redirectWithCookies(url)
+  }
+
+  if (pathname.startsWith('/admin') && user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (profile?.role !== 'admin') {
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return redirectWithCookies(url)
+    }
   }
 
   return supabaseResponse
