@@ -66,6 +66,22 @@ export async function updateSpace(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  const { data: existing } = await supabase
+    .from('spaces')
+    .select('created_by')
+    .eq('id', spaceId)
+    .single()
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isOwner = existing?.created_by === user.id
+  const isPrivileged = profile?.role === 'admin' || profile?.role === 'moderator'
+  if (!isOwner && !isPrivileged) return { error: 'Không có quyền chỉnh sửa Space' }
+
   const { data: space, error } = await supabase
     .from('spaces')
     .update({ ...data, updated_at: new Date().toISOString() })

@@ -23,7 +23,8 @@ type LoginForm = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') ?? '/'
+  const rawRedirect = searchParams.get('redirectTo') ?? '/'
+  const redirectTo = rawRedirect.startsWith('/') ? rawRedirect : '/'
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 

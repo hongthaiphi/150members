@@ -94,7 +94,7 @@ CREATE POLICY "Users can remove own reactions" ON reactions FOR DELETE USING (au
 
 -- notifications
 CREATE POLICY "Users can view own notifications" ON notifications FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "System can insert notifications" ON notifications FOR INSERT WITH CHECK (TRUE);
+CREATE POLICY "System can insert notifications" ON notifications FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Users can mark own notifications read" ON notifications FOR UPDATE USING (auth.uid() = user_id);
 
 -- conversations + messages

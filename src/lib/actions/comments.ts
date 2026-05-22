@@ -48,11 +48,12 @@ export async function createComment(
 
     await supabase.from('notifications').insert({
       user_id: post.author_id,
-      type: parentId ? 'reply' : 'reply',
+      type: 'reply' as const,
       data: {
         post_id: postId,
         comment_id: comment?.id,
         space_slug: spaceSlug,
+        is_reply: !!parentId,
         actor_name: actorProfile?.display_name ?? actorProfile?.username ?? 'Ai đó',
         post_title: (post as unknown as { title: string }).title,
       },

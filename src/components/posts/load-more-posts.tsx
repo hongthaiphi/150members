@@ -39,8 +39,9 @@ export function LoadMorePosts({ spaceId, spaceSlug, initialPosts, pageSize = 20 
         .from('posts')
         .select('id, title, content, created_at, is_pinned, profiles!author_id(username, display_name, avatar_url)')
         .eq('space_id', spaceId)
-        .lt('created_at', oldest.created_at)
+        .or(`created_at.lt.${oldest.created_at},and(created_at.eq.${oldest.created_at},id.lt.${oldest.id})`)
         .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
         .limit(pageSize)
 
       const newPosts = (data ?? []) as unknown as PostItem[]

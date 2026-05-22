@@ -73,6 +73,15 @@ export async function markConversationRead(conversationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
+  const { data: participant } = await supabase
+    .from('conversation_participants')
+    .select('user_id')
+    .eq('conversation_id', conversationId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!participant) return
+
   await supabase
     .from('messages')
     .update({ is_read: true })
