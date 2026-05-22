@@ -92,7 +92,7 @@ export async function deletePost(postId: string, spaceSlug: string) {
   redirect(`/spaces/${spaceSlug}`)
 }
 
-export async function togglePin(postId: string, spaceSlug: string, currentlyPinned: boolean) {
+export async function togglePin(postId: string, spaceSlug: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
