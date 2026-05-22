@@ -20,6 +20,20 @@ const items: Array<{
   { key: 'website', icon: Globe, label: 'Website', prefix: '' },
 ]
 
+function buildHref(key: keyof SocialLinks, value: string, prefix: string): string | null {
+  if (key === 'website') {
+    try {
+      const url = new URL(value)
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+      return value
+    } catch {
+      return null
+    }
+  }
+  // For handles (twitter, linkedin, github): always prepend prefix to prevent open redirect
+  return `${prefix}${value}`
+}
+
 export function SocialLinks({ links }: { links: SocialLinks }) {
   const active = items.filter(({ key }) => links[key])
   if (active.length === 0) return null
@@ -28,7 +42,8 @@ export function SocialLinks({ links }: { links: SocialLinks }) {
     <div className="flex items-center gap-3">
       {active.map(({ key, icon: Icon, label, prefix }) => {
         const value = links[key]!
-        const href = value.startsWith('http') ? value : `${prefix}${value}`
+        const href = buildHref(key, value, prefix)
+        if (!href) return null
         return (
           <a
             key={key}

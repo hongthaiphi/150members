@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Camera, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,11 +16,21 @@ export function AvatarUpload({ currentUrl, displayName }: AvatarUploadProps) {
   const [preview, setPreview] = useState<string | null>(currentUrl)
   const [uploading, setUploading] = useState(false)
 
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith('blob:')) URL.revokeObjectURL(preview)
+    }
+  }, [preview])
+
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setPreview(URL.createObjectURL(file))
+    const newPreview = URL.createObjectURL(file)
+    setPreview(prev => {
+      if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev)
+      return newPreview
+    })
     setUploading(true)
 
     try {
@@ -37,6 +47,7 @@ export function AvatarUpload({ currentUrl, displayName }: AvatarUploadProps) {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Lỗi không xác định')
       setPreview(currentUrl)
+      if (inputRef.current) inputRef.current.value = ''
     } finally {
       setUploading(false)
     }

@@ -116,9 +116,13 @@ export default async function ProfilePage({ params }: Props) {
                 <CardHeader className="py-3">
                   <div className="flex items-center justify-between gap-2">
                     <CardTitle className="text-sm font-medium">
-                      <Link href={`/spaces/${post.spaces?.slug}/posts/${post.id}`} className="hover:underline">
-                        {post.title}
-                      </Link>
+                      {post.spaces ? (
+                        <Link href={`/spaces/${post.spaces.slug}/posts/${post.id}`} className="hover:underline">
+                          {post.title}
+                        </Link>
+                      ) : (
+                        <span>{post.title}</span>
+                      )}
                     </CardTitle>
                     <span className="text-xs text-muted-foreground shrink-0">
                       {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })}
