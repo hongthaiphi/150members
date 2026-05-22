@@ -34,7 +34,9 @@ CREATE POLICY "Admins can update any profile" ON profiles FOR UPDATE USING (is_a
 
 -- spaces
 CREATE POLICY "Anyone can view public spaces" ON spaces FOR SELECT USING (
-  NOT is_private OR EXISTS (SELECT 1 FROM space_members WHERE space_id = id AND user_id = auth.uid())
+  NOT is_private
+  OR created_by = auth.uid()
+  OR EXISTS (SELECT 1 FROM space_members WHERE space_id = id AND user_id = auth.uid())
 );
 CREATE POLICY "Members can create spaces" ON spaces FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Creator and admins can update space" ON spaces FOR UPDATE USING (
@@ -44,9 +46,7 @@ CREATE POLICY "Admin only can delete space" ON spaces FOR DELETE USING (is_admin
 
 -- space_members
 CREATE POLICY "Members can view space membership" ON space_members FOR SELECT USING (
-  EXISTS (SELECT 1 FROM spaces WHERE id = space_id AND (NOT is_private OR EXISTS (
-    SELECT 1 FROM space_members sm WHERE sm.space_id = space_id AND sm.user_id = auth.uid()
-  )))
+  user_id = auth.uid()
 );
 CREATE POLICY "Users can join spaces" ON space_members FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users can leave spaces" ON space_members FOR DELETE USING (auth.uid() = user_id);
