@@ -90,9 +90,9 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
       {/* User profile at bottom */}
       {profile && (
         <div className="border-t p-3 shrink-0">
-          <Link href={`/profile/${profile.username}`}>
-            <Button variant="ghost" className="w-full justify-start gap-2 h-auto py-2">
-              <Avatar className="h-7 w-7">
+          <div className="flex items-center gap-2">
+            <Link href={`/profile/${profile.username}`} className="flex items-center gap-2 flex-1 min-w-0 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
+              <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={profile.avatar_url ?? undefined} />
                 <AvatarFallback className="text-xs">
                   {(profile.display_name ?? profile.username).charAt(0).toUpperCase()}
@@ -102,11 +102,11 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
                 <p className="text-sm font-medium truncate">{profile.display_name ?? profile.username}</p>
                 <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
               </div>
-              <Link href="/settings/profile">
-                <Settings className="h-4 w-4 text-muted-foreground shrink-0" />
-              </Link>
-            </Button>
-          </Link>
+            </Link>
+            <Link href="/settings/profile" className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0" title="Cài đặt hồ sơ">
+              <Settings className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       )}
     </aside>

@@ -3,9 +3,9 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Search } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { NotificationBell } from '@/components/layout/notification-bell'
+import { UserMenu } from '@/components/layout/user-menu'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -41,15 +41,7 @@ export function Header({ profile }: HeaderProps) {
 
       <div className="flex items-center gap-2 ml-auto">
         <NotificationBell />
-
-        {profile && (
-          <Avatar className="h-8 w-8 cursor-pointer">
-            <AvatarImage src={profile.avatar_url ?? undefined} />
-            <AvatarFallback className="text-xs">
-              {(profile.display_name ?? profile.username).charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        )}
+        {profile && <UserMenu profile={profile} />}
       </div>
     </header>
   )
