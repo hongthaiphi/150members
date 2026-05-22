@@ -21,11 +21,12 @@ type PostWithRelations = {
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
 
   const { data: rawMemberships } = await supabase
     .from('space_members')
     .select('space_id')
-    .eq('user_id', user!.id)
+    .eq('user_id', user.id)
 
   const spaceIds = (rawMemberships as Array<{ space_id: string }> | null)?.map(m => m.space_id) ?? []
 
