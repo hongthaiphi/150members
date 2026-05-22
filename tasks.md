@@ -7,15 +7,17 @@
 ## 🔴 Phase 1 — Setup & Foundation
 
 ### Project Setup
+
 - [x] `SETUP-01` Khởi tạo Next.js 14 với App Router + TypeScript
 - [x] `SETUP-02` Cài đặt Tailwind CSS + shadcn/ui
-- [ ] `SETUP-03` Tạo project Supabase, lấy API keys
+- [x] `SETUP-03` Tạo project Supabase, lấy API keys
 - [x] `SETUP-04` Cấu hình biến môi trường `.env.local`
 - [x] `SETUP-05` Setup Supabase client (browser + server)
-- [ ] `SETUP-06` Deploy lên Vercel, kết nối repo GitHub
-- [ ] `SETUP-07` Cấu hình Supabase environment variables trên Vercel
+- [x] `SETUP-06` Deploy lên Vercel, kết nối repo GitHub
+- [x] `SETUP-07` Cấu hình Supabase environment variables trên Vercel
 
 ### Database Schema
+
 - [x] `DB-01` Tạo bảng `profiles` (id, username, avatar_url, bio, role, social_links)
 - [x] `DB-02` Tạo bảng `spaces` (id, name, slug, description, cover_image, is_private)
 - [x] `DB-03` Tạo bảng `space_members` (space_id, user_id, joined_at)
@@ -172,19 +174,19 @@
 
 ## Tổng quan
 
-| Phase | Số task | Hoàn thành | Priority |
-|---|---|---|---|
-| Setup + DB | 17 | 14/17 | 🔴 MVP |
-| Auth | 10 | 10/10 | 🔴 MVP |
-| Layout + UI | 7 | 7/7 | 🔴 MVP |
-| Profile | 5 | 5/5 | 🔴 MVP |
-| Spaces | 8 | 8/8 | 🔴 MVP |
-| Posts | 10 | 10/10 | 🔴 MVP |
-| Comments | 7 | 7/7 | 🔴 MVP |
-| Notifications | 5 | 4/5 | 🔴 MVP |
-| DM | 6 | 0/6 | 🟡 V2 |
-| Search | 5 | 0/5 | 🟡 V2 |
-| Email | 4 | 0/4 | 🟡 V2 |
-| Admin | 7 | 0/7 | 🟢 V3 |
-| Polish | 7 | 0/7 | 🟢 V3 |
-| **Tổng** | **98** | **65/98** | |
+| Phase         | Số task | Hoàn thành | Priority |
+| ------------- | ------- | ---------- | -------- |
+| Setup + DB    | 17      | 14/17      | 🔴 MVP   |
+| Auth          | 10      | 10/10      | 🔴 MVP   |
+| Layout + UI   | 7       | 7/7        | 🔴 MVP   |
+| Profile       | 5       | 5/5        | 🔴 MVP   |
+| Spaces        | 8       | 8/8        | 🔴 MVP   |
+| Posts         | 10      | 10/10      | 🔴 MVP   |
+| Comments      | 7       | 7/7        | 🔴 MVP   |
+| Notifications | 5       | 4/5        | 🔴 MVP   |
+| DM            | 6       | 0/6        | 🟡 V2    |
+| Search        | 5       | 0/5        | 🟡 V2    |
+| Email         | 4       | 0/4        | 🟡 V2    |
+| Admin         | 7       | 0/7        | 🟢 V3    |
+| Polish        | 7       | 0/7        | 🟢 V3    |
+| **Tổng**      | **98**  | **65/98**  |          |

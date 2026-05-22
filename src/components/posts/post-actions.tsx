@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import Link from 'next/link'
 import { toast } from 'sonner'
 import { MoreHorizontal, Edit, Trash2, Pin, PinOff, Share2, ThumbsUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -90,17 +89,13 @@ export function PostActions({
       {/* More actions (author / admin) */}
       {(isAuthor || canManage) && (
         <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            }
-          />
+          <DropdownMenuTrigger className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none">
+            <MoreHorizontal className="h-4 w-4" />
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {isAuthor && (
               <DropdownMenuItem
-                render={<Link href={`/spaces/${spaceSlug}/posts/${postId}/edit`} />}
+                onClick={() => { window.location.href = `/spaces/${spaceSlug}/posts/${postId}/edit` }}
                 className="gap-2"
               >
                 <Edit className="h-4 w-4" /> Chỉnh sửa
@@ -117,7 +112,8 @@ export function PostActions({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleDelete}
-              className="gap-2 text-destructive focus:text-destructive"
+              variant="destructive"
+              className="gap-2"
             >
               <Trash2 className="h-4 w-4" /> Xóa bài viết
             </DropdownMenuItem>

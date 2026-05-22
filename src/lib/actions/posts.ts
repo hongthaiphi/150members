@@ -92,9 +92,18 @@ export async function togglePin(postId: string, spaceSlug: string, currentlyPinn
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  // Allow: admin, moderator, or space creator
   const profile = await getProfile(supabase, user.id)
-  if (profile?.role !== 'admin' && profile?.role !== 'moderator') {
-    return { error: 'Chỉ Admin/Moderator mới có thể pin bài viết' }
+  const { data: post } = await supabase.from('posts').select('space_id').eq('id', postId).single()
+  const { data: space } = post
+    ? await supabase.from('spaces').select('created_by').eq('id', post.space_id).single()
+    : { data: null }
+
+  const isSpaceCreator = space?.created_by === user.id
+  const isPrivileged = profile?.role === 'admin' || profile?.role === 'moderator'
+
+  if (!isSpaceCreator && !isPrivileged) {
+    return { error: 'Chỉ Admin/Moderator/Người tạo Space mới có thể ghim bài viết' }
   }
 
   const { error } = await supabase
