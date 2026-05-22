@@ -14,13 +14,22 @@ import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
+const handleRegex = /^[a-zA-Z0-9_.-]*$/
+
 const schema = z.object({
   display_name: z.string().max(50, 'Tối đa 50 ký tự').optional().or(z.literal('')),
   bio: z.string().max(300, 'Tối đa 300 ký tự').optional().or(z.literal('')),
-  twitter: z.string().max(100).optional().or(z.literal('')),
-  linkedin: z.string().max(100).optional().or(z.literal('')),
-  github: z.string().max(100).optional().or(z.literal('')),
-  website: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
+  twitter: z.string().max(100).regex(handleRegex, 'Chỉ nhập username, không nhập URL').optional().or(z.literal('')),
+  linkedin: z.string().max(100).regex(handleRegex, 'Chỉ nhập username, không nhập URL').optional().or(z.literal('')),
+  github: z.string().max(100).regex(handleRegex, 'Chỉ nhập username, không nhập URL').optional().or(z.literal('')),
+  website: z.string().refine(val => {
+    try {
+      const url = new URL(val)
+      return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+      return false
+    }
+  }, 'URL phải bắt đầu bằng http:// hoặc https://').optional().or(z.literal('')),
 })
 
 type FormData = z.infer<typeof schema>
@@ -43,21 +52,26 @@ export function EditProfileForm({ profile }: { profile: Profile }) {
 
   async function onSubmit(data: FormData) {
     setSaving(true)
-    const result = await updateProfile({
-      display_name: data.display_name ?? '',
-      bio: data.bio ?? '',
-      social_links: {
-        twitter: data.twitter || undefined,
-        linkedin: data.linkedin || undefined,
-        github: data.github || undefined,
-        website: data.website || undefined,
-      },
-    })
-    setSaving(false)
-    if (result?.error) {
-      toast.error(result.error)
-    } else {
-      toast.success('Cập nhật hồ sơ thành công')
+    try {
+      const result = await updateProfile({
+        display_name: data.display_name ?? '',
+        bio: data.bio ?? '',
+        social_links: {
+          twitter: data.twitter || undefined,
+          linkedin: data.linkedin || undefined,
+          github: data.github || undefined,
+          website: data.website || undefined,
+        },
+      })
+      if (result?.error) {
+        toast.error(result.error)
+      } else {
+        toast.success('Cập nhật hồ sơ thành công')
+      }
+    } catch {
+      toast.error('Đã xảy ra lỗi, vui lòng thử lại')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -99,7 +113,7 @@ export function EditProfileForm({ profile }: { profile: Profile }) {
 
         {([
           { name: 'twitter', label: 'Twitter / X', placeholder: '@username' },
-          { name: 'linkedin', label: 'LinkedIn', placeholder: 'username hoặc URL đầy đủ' },
+          { name: 'linkedin', label: 'LinkedIn', placeholder: 'username' },
           { name: 'github', label: 'GitHub', placeholder: 'username' },
           { name: 'website', label: 'Website', placeholder: 'https://example.com' },
         ] as const).map(({ name, label, placeholder }) => (

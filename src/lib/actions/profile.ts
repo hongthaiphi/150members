@@ -37,7 +37,9 @@ export async function updateProfile(data: ProfileFormData) {
     .eq('id', user.id)
     .single()
 
-  revalidatePath(`/profile/${profile?.username}`)
+  if (profile?.username) {
+    revalidatePath(`/profile/${profile.username}`)
+  }
   revalidatePath('/settings/profile')
   return { success: true }
 }
@@ -60,7 +62,9 @@ export async function updateAvatar(avatarUrl: string) {
     .eq('id', user.id)
     .single()
 
-  revalidatePath(`/profile/${profile?.username}`)
+  if (profile?.username) {
+    revalidatePath(`/profile/${profile.username}`)
+  }
   revalidatePath('/settings/profile')
   return { success: true }
 }
