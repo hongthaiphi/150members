@@ -13,6 +13,7 @@ type Notification = Database['public']['Tables']['notifications']['Row']
 
 interface NotificationDropdownProps {
   onClose: () => void
+  onCountChange: (delta: number) => void
 }
 
 const typeLabels: Record<string, string> = {
@@ -23,7 +24,7 @@ const typeLabels: Record<string, string> = {
   new_member: 'đã tham gia cộng đồng',
 }
 
-export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
+export function NotificationDropdown({ onClose, onCountChange }: NotificationDropdownProps) {
   const ref = useRef<HTMLDivElement>(null)
   const supabase = createClient()
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -43,11 +44,9 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
       setLoading(false)
     }
     load()
-  // supabase client is stable, no need in deps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Click outside to close
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) onClose()
@@ -59,18 +58,22 @@ export function NotificationDropdown({ onClose }: NotificationDropdownProps) {
   async function markAllRead() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    // Work around Supabase generic type inference with composite primary key tables
+    const prevUnread = notifications.filter(n => !n.is_read).length
     const table = supabase.from('notifications')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (table as unknown as any).update({ is_read: true }).eq('user_id', user.id)
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    onCountChange(-prevUnread)
   }
 
   async function markRead(id: string) {
+    const notif = notifications.find(n => n.id === id)
+    if (!notif || notif.is_read) return
     const table = supabase.from('notifications')
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (table as unknown as any).update({ is_read: true }).eq('id', id)
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n))
+    onCountChange(-1)
   }
 
   const unread = notifications.filter(n => !n.is_read).length

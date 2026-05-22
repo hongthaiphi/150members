@@ -2,11 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Search, Bell } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { NotificationDropdown } from '@/components/layout/notification-dropdown'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -18,7 +17,6 @@ interface HeaderProps {
 export function Header({ profile }: HeaderProps) {
   const router = useRouter()
   const [query, setQuery] = useState('')
-  const [showNotifications, setShowNotifications] = useState(false)
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -29,7 +27,6 @@ export function Header({ profile }: HeaderProps) {
 
   return (
     <header className="h-14 border-b flex items-center gap-3 px-4 shrink-0 bg-background">
-      {/* Search bar */}
       <form onSubmit={handleSearch} className="flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -43,22 +40,8 @@ export function Header({ profile }: HeaderProps) {
       </form>
 
       <div className="flex items-center gap-2 ml-auto">
-        {/* Notifications */}
-        <div className="relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 relative"
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell className="h-4 w-4" />
-          </Button>
-          {showNotifications && (
-            <NotificationDropdown onClose={() => setShowNotifications(false)} />
-          )}
-        </div>
+        <NotificationBell />
 
-        {/* Avatar */}
         {profile && (
           <Avatar className="h-8 w-8 cursor-pointer">
             <AvatarImage src={profile.avatar_url ?? undefined} />

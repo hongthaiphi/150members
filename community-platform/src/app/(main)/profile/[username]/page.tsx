@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { RoleBadge } from '@/components/profile/role-badge'
 import { SocialLinks } from '@/components/profile/social-links'
+import { StartConversationButton } from '@/components/messages/start-conversation-button'
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import type { Database, UserRole } from '@/types/database'
@@ -81,10 +82,12 @@ export default async function ProfilePage({ params }: Props) {
             </div>
             <div className="flex items-center gap-2">
               <RoleBadge role={profile.role as UserRole} />
-              {isOwn && (
+              {isOwn ? (
                 <Link href="/settings/profile">
                   <Button variant="outline" size="sm">Chỉnh sửa hồ sơ</Button>
                 </Link>
+              ) : (
+                <StartConversationButton otherUserId={profile.id} />
               )}
             </div>
           </div>
