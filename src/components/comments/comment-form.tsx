@@ -59,7 +59,7 @@ export function CommentForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-3">
+    <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(e) }} className="flex gap-3">
       <Avatar className="h-8 w-8 shrink-0 mt-0.5">
         <AvatarImage src={currentUser.avatarUrl ?? undefined} />
         <AvatarFallback className="text-xs">

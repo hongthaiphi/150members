@@ -62,7 +62,7 @@ export function EditProfileForm({ profile }: { profile: Profile }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-6">
       <div className="space-y-4">
         <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">
           Thông tin cơ bản

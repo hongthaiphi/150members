@@ -57,7 +57,7 @@ export function PostForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+    <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-5">
       <div className="space-y-1">
         <Label htmlFor="title">Tiêu đề *</Label>
         <Input

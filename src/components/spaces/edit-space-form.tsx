@@ -70,7 +70,7 @@ export function EditSpaceForm({ space }: { space: Space }) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-6">
       {/* Cover image */}
       <div className="space-y-2">
         <Label>Ảnh bìa</Label>

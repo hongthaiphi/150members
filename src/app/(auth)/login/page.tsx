@@ -58,7 +58,7 @@ export default function LoginPage() {
           <Separator className="flex-1" />
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" {...register('email')} />

@@ -38,7 +38,7 @@ export function CreateSpaceForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-6">
       {/* Icon picker */}
       <div className="space-y-2">
         <Label>Icon Space</Label>

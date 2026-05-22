@@ -44,7 +44,7 @@ export default function ResetPasswordPage() {
           <p className="text-muted-foreground text-sm">Nhập mật khẩu mới cho tài khoản của bạn</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="password">Mật khẩu mới</Label>
             <Input id="password" type="password" {...register('password')} />

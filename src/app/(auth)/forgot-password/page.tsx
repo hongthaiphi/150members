@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
           <p className="text-muted-foreground text-sm">Nhập email để nhận link đặt lại mật khẩu</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" {...register('email')} />
