@@ -33,7 +33,7 @@ export function Header({ profile }: HeaderProps) {
   }
 
   return (
-    <header className="h-14 border-b flex items-center gap-3 px-4 shrink-0 bg-background">
+    <header className="hidden md:flex h-14 border-b items-center gap-3 px-4 shrink-0 bg-background">
       <form onSubmit={handleSearch} className="flex-1 max-w-md">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
