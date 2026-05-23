@@ -94,6 +94,22 @@ export async function sendMessage(conversationId: string, content: string) {
   return { error: error?.message }
 }
 
+export async function searchUsersForDM(query: string): Promise<Array<{ id: string; username: string; display_name: string | null; avatar_url: string | null }>> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !query.trim()) return []
+
+  const q = query.trim().toLowerCase()
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, username, display_name, avatar_url')
+    .neq('id', user.id)
+    .or(`username.ilike.%${q}%,display_name.ilike.%${q}%`)
+    .limit(8)
+
+  return (data ?? []) as Array<{ id: string; username: string; display_name: string | null; avatar_url: string | null }>
+}
+
 export async function markConversationRead(conversationId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

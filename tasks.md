@@ -121,12 +121,12 @@
 
 ## 🟡 Phase 9 — Direct Messages
 
-- [ ] `DM-01` Trang DM (`/messages`)
-- [ ] `DM-02` Danh sách cuộc hội thoại
-- [ ] `DM-03` Trang chat 1-1 (`/messages/[conversationId]`)
-- [ ] `DM-04` Gửi / nhận tin nhắn realtime (Supabase Realtime)
-- [ ] `DM-05` Hiển thị trạng thái đã đọc
-- [ ] `DM-06` Bắt đầu cuộc hội thoại mới từ profile người khác
+- [x] `DM-01` Trang DM (`/messages`)
+- [x] `DM-02` Danh sách cuộc hội thoại
+- [x] `DM-03` Trang chat 1-1 (`/messages/[conversationId]`)
+- [x] `DM-04` Gửi / nhận tin nhắn realtime (Supabase Realtime)
+- [x] `DM-05` Hiển thị trạng thái đã đọc
+- [x] `DM-06` Bắt đầu cuộc hội thoại mới từ profile người khác
 
 ---
 
@@ -185,9 +185,9 @@
 | Posts         | 10      | 10/10      | 🔴 MVP   |
 | Comments      | 7       | 7/7        | 🔴 MVP   |
 | Notifications | 5       | 4/5        | 🔴 MVP   |
-| DM            | 6       | 0/6        | 🟡 V2    |
+| DM            | 6       | 6/6        | 🟡 V2    |
 | Search        | 5       | 0/5        | 🟡 V2    |
 | Email         | 4       | 0/4        | 🟡 V2    |
 | Admin         | 7       | 0/7        | 🟢 V3    |
 | Polish        | 7       | 0/7        | 🟢 V3    |
-| **Tổng**      | **98**  | **65/98**  |          |
+| **Tổng**      | **98**  | **71/98**  |          |
