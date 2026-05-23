@@ -13,6 +13,7 @@ import { Pin } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { UserRole } from '@/types/database'
 import type { CommentData } from '@/components/comments/comment-item'
+import { htmlToPlainText } from '@/lib/actions/posts'
 
 interface Props { params: { slug: string; id: string } }
 
@@ -23,13 +24,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .select('title, content')
     .eq('id', params.id)
     .single()
-  
+
   const post = data as { title: string; content: string } | null
   if (!post) return { title: 'Bài viết không tồn tại' }
-  
+
+  // Bug 4 fix: use proper HTML-to-text instead of naive regex that can leak tags
+  const description = htmlToPlainText(post.content).slice(0, 160)
+
   return {
     title: `${post.title} — Community`,
-    description: post.content.replace(/<[^>]+>/g, '').slice(0, 160),
+    description,
   }
 }
 
@@ -70,12 +74,12 @@ export default async function PostDetailPage({ params }: Props) {
     .single()
 
   const post = rawPost as unknown as (PostRow & { spaces: { id: string; name: string; slug: string; is_private: boolean; created_by: string } }) | null
-  
+
   if (!post) notFound()
-  
+
   const space = post.spaces
 
-  // Fetch comments + reactions + profile data
+  // Fetch comments + membership + profile in parallel
   const [{ data: rawComments }, membershipResult, profileResult] = await Promise.all([
     supabase
       .from('comments')
@@ -92,21 +96,33 @@ export default async function PostDetailPage({ params }: Props) {
 
   const comments = (rawComments ?? []) as unknown as RawComment[]
 
-  // Build reaction counts
+  // Bug 3 fix: use COUNT+GROUP BY instead of fetching all reaction rows into memory
   const allTargetIds = [params.id, ...comments.map(c => c.id)]
-  const { data: allReactions } = await supabase
-    .from('reactions')
-    .select('user_id, target_id, target_type')
-    .in('target_id', allTargetIds)
 
-  const reactions = (allReactions ?? []) as Array<{ user_id: string; target_id: string; target_type: string }>
+  const [reactionCountsResult, userLikesResult] = await Promise.all([
+    // Bug 3 fix: get counts from DB via RPC — avoids loading all reaction rows into JS memory
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as unknown as any).rpc('get_reaction_counts', { target_ids: allTargetIds }) as Promise<{ data: Array<{ target_id: string; count: number }> | null }>,
+    // Get only the targets the current user liked (lightweight — just target_id column)
+    user
+      ? supabase
+          .from('reactions')
+          .select('target_id')
+          .eq('user_id', user.id)
+          .in('target_id', allTargetIds)
+      : Promise.resolve({ data: [] as Array<{ target_id: string }> }),
+  ])
 
-  function countReactions(targetId: string) {
-    return reactions.filter(r => r.target_id === targetId).length
-  }
-  function userLiked(targetId: string) {
-    return reactions.some(r => r.target_id === targetId && r.user_id === user?.id)
-  }
+  // Build lookup maps
+  const countMap = new Map<string, number>(
+    (reactionCountsResult.data ?? []).map(r => [r.target_id, Number(r.count)])
+  )
+  const likedSet = new Set<string>(
+    (userLikesResult.data ?? []).map(r => (r as { target_id: string }).target_id)
+  )
+
+  function countReactions(targetId: string) { return countMap.get(targetId) ?? 0 }
+  function userLiked(targetId: string) { return likedSet.has(targetId) }
 
   const isMember = !!membershipResult.data
   const userRole = (profileResult.data as { role: UserRole } | null)?.role
@@ -131,7 +147,7 @@ export default async function PostDetailPage({ params }: Props) {
     liked: userLiked(c.id),
   }))
 
-  // Fetch actual current user profile for comment form
+  // Fetch current user profile for comment form
   let commentCurrentUser: { id: string; avatarUrl: string | null; displayName: string } | null = null
   if (user) {
     const { data: myProfile } = await supabase

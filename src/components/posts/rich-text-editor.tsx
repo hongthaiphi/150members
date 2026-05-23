@@ -72,7 +72,7 @@ export function RichTextEditor({ content, onChange, placeholder, className, edit
       if (!file) return
       const fd = new FormData()
       fd.append('file', file)
-      fd.append('bucket', 'avatars')
+      fd.append('bucket', 'posts')
       try {
         const res = await fetch('/api/upload', { method: 'POST', body: fd })
         const json = await res.json() as { url?: string; error?: string }

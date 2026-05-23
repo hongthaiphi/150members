@@ -2,6 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import sanitizeHtml from 'sanitize-html'
+
+const COMMENT_MAX = 5_000
+
+// Comments are plain text — strip all HTML tags
+function sanitizeComment(text: string): string {
+  return sanitizeHtml(text, { allowedTags: [], allowedAttributes: {} }).trim()
+}
 
 async function getProfile(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from('profiles').select('role').eq('id', userId).single()
@@ -18,37 +26,16 @@ export async function createComment(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
-  // Verify user is a member of the space containing this post
-  const { data: postForCheck } = await supabase
-    .from('posts')
-    .select('space_id')
-    .eq('id', postId)
-    .single()
-
-  if (postForCheck) {
-    const { data: spaceForCheck } = await supabase
-      .from('spaces')
-      .select('is_private')
-      .eq('id', postForCheck.space_id)
-      .single()
-
-    if (spaceForCheck?.is_private) {
-      const { data: membership } = await supabase
-        .from('space_members')
-        .select('user_id')
-        .eq('space_id', postForCheck.space_id)
-        .eq('user_id', user.id)
-        .single()
-      if (!membership) return { error: 'Bạn chưa tham gia Space này' }
-    }
-  }
+  const sanitized = sanitizeComment(content)
+  if (!sanitized) return { error: 'Nội dung bình luận không được để trống' }
+  if (sanitized.length > COMMENT_MAX) return { error: `Bình luận tối đa ${COMMENT_MAX} ký tự` }
 
   const { data: comment, error } = await supabase
     .from('comments')
     .insert({
       post_id: postId,
       author_id: user.id,
-      content,
+      content: sanitized,
       parent_id: parentId ?? null,
     })
     .select('id')
@@ -64,13 +51,7 @@ export async function createComment(
     .single()
 
   if (post && post.author_id !== user.id) {
-    const { data: actor } = await supabase
-      .from('profiles')
-      .select('display_name, username')
-      .eq('id', user.id)
-      .single()
-    const actorProfile = actor as { display_name: string | null; username: string } | null
-
+    // Store actor_id (not actor_name) to avoid stale snapshot — display fetches fresh profile
     await supabase.from('notifications').insert({
       user_id: post.author_id,
       type: 'reply' as const,
@@ -79,7 +60,7 @@ export async function createComment(
         comment_id: comment?.id,
         space_slug: spaceSlug,
         is_reply: !!parentId,
-        actor_name: actorProfile?.display_name ?? actorProfile?.username ?? 'Ai đó',
+        actor_id: user.id,
         post_title: (post as unknown as { title: string }).title,
       },
     })
@@ -99,6 +80,10 @@ export async function updateComment(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  const sanitized = sanitizeComment(content)
+  if (!sanitized) return { error: 'Nội dung bình luận không được để trống' }
+  if (sanitized.length > COMMENT_MAX) return { error: `Bình luận tối đa ${COMMENT_MAX} ký tự` }
+
   const { data: comment } = await supabase
     .from('comments')
     .select('author_id')
@@ -112,7 +97,7 @@ export async function updateComment(
 
   const { error } = await supabase
     .from('comments')
-    .update({ content, updated_at: new Date().toISOString() })
+    .update({ content: sanitized, updated_at: new Date().toISOString() })
     .eq('id', commentId)
 
   if (error) return { error: error.message }

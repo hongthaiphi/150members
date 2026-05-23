@@ -3,21 +3,74 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import sanitizeHtml from 'sanitize-html'
+
+// Allowed HTML tags/attrs from TipTap rich-text editor
+const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
+  allowedTags: [
+    'h2', 'h3', 'p', 'br', 'strong', 'em', 's', 'code', 'pre',
+    'blockquote', 'ul', 'ol', 'li', 'a', 'img',
+  ],
+  allowedAttributes: {
+    a: ['href', 'target', 'rel'],
+    img: ['src', 'alt', 'title'],
+    code: ['class'],
+    pre: ['class'],
+  },
+  allowedSchemes: ['https', 'http', 'mailto'],
+  // Force safe link attrs
+  transformTags: {
+    a: sanitizeHtml.simpleTransform('a', { rel: 'noopener noreferrer', target: '_blank' }),
+  },
+}
+
+function sanitizeContent(html: string): string {
+  return sanitizeHtml(html, SANITIZE_OPTIONS)
+}
+
+// Strip HTML to plain text for meta descriptions
+function htmlToPlainText(html: string): string {
+  return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 export type PostFormData = {
   title: string
   content: string
 }
 
+// Server-side length limits
+const TITLE_MAX = 200
+const CONTENT_MAX = 50_000
+
 async function getProfile(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from('profiles').select('role, username').eq('id', userId).single()
   return data as { role: string; username: string } | null
+}
+
+// Derive real slug from DB given a postId — prevents client-supplied slug from misdirecting revalidation
+async function getSlugFromPost(supabase: Awaited<ReturnType<typeof createClient>>, postId: string) {
+  const { data } = await supabase
+    .from('posts')
+    .select('space_id, spaces!space_id(slug)')
+    .eq('id', postId)
+    .single()
+  const row = data as { space_id: string; spaces: { slug: string } | null } | null
+  return row?.spaces?.slug ?? null
 }
 
 export async function createPost(spaceId: string, spaceSlug: string, data: PostFormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
+
+  // Server-side validation
+  const title = data.title.trim()
+  const content = sanitizeContent(data.content)
+  if (!title) return { error: 'Tiêu đề không được để trống' }
+  if (title.length > TITLE_MAX) return { error: `Tiêu đề tối đa ${TITLE_MAX} ký tự` }
+  if (content.length > CONTENT_MAX) return { error: `Nội dung tối đa ${CONTENT_MAX} ký tự` }
 
   // Must be a space member
   const { data: membership } = await supabase
@@ -31,7 +84,7 @@ export async function createPost(spaceId: string, spaceSlug: string, data: PostF
 
   const { data: post, error } = await supabase
     .from('posts')
-    .insert({ space_id: spaceId, author_id: user.id, title: data.title, content: data.content })
+    .insert({ space_id: spaceId, author_id: user.id, title, content })
     .select('id')
     .single()
 
@@ -50,6 +103,13 @@ export async function updatePost(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  // Server-side validation
+  const title = data.title.trim()
+  const content = sanitizeContent(data.content)
+  if (!title) return { error: 'Tiêu đề không được để trống' }
+  if (title.length > TITLE_MAX) return { error: `Tiêu đề tối đa ${TITLE_MAX} ký tự` }
+  if (content.length > CONTENT_MAX) return { error: `Nội dung tối đa ${CONTENT_MAX} ký tự` }
+
   const { data: space } = await supabase.from('spaces').select('id').eq('slug', spaceSlug).single()
   const { data: post } = await supabase.from('posts').select('author_id, space_id').eq('id', postId).single()
   const profile = await getProfile(supabase, user.id)
@@ -61,14 +121,16 @@ export async function updatePost(
 
   const { error } = await supabase
     .from('posts')
-    .update({ title: data.title, content: data.content, updated_at: new Date().toISOString() })
+    .update({ title, content, updated_at: new Date().toISOString() })
     .eq('id', postId)
     .eq('space_id', space.id)
 
   if (error) return { error: error.message }
 
-  revalidatePath(`/spaces/${spaceSlug}/posts/${postId}`)
-  redirect(`/spaces/${spaceSlug}/posts/${postId}`)
+  // Derive slug from DB to avoid misdirecting revalidation
+  const realSlug = await getSlugFromPost(supabase, postId) ?? spaceSlug
+  revalidatePath(`/spaces/${realSlug}/posts/${postId}`)
+  redirect(`/spaces/${realSlug}/posts/${postId}`)
 }
 
 export async function deletePost(postId: string, spaceSlug: string) {
@@ -88,6 +150,7 @@ export async function deletePost(postId: string, spaceSlug: string) {
   const { error } = await supabase.from('posts').delete().eq('id', postId).eq('space_id', space.id)
   if (error) return { error: error.message }
 
+  // Derive slug from space (which we already validated belongs to this post)
   revalidatePath(`/spaces/${spaceSlug}`)
   redirect(`/spaces/${spaceSlug}`)
 }
@@ -99,9 +162,9 @@ export async function togglePin(postId: string, spaceSlug: string) {
 
   // Allow: admin, moderator, or space creator
   const profile = await getProfile(supabase, user.id)
-  const { data: post } = await supabase.from('posts').select('space_id').eq('id', postId).single()
+  const { data: post } = await supabase.from('posts').select('space_id, is_pinned').eq('id', postId).single()
   const { data: space } = post
-    ? await supabase.from('spaces').select('created_by').eq('id', post.space_id).single()
+    ? await supabase.from('spaces').select('created_by, slug').eq('id', post.space_id).single()
     : { data: null }
 
   const isSpaceCreator = space?.created_by === user.id
@@ -111,16 +174,16 @@ export async function togglePin(postId: string, spaceSlug: string) {
     return { error: 'Chỉ Admin/Moderator/Người tạo Space mới có thể ghim bài viết' }
   }
 
-  const { data: currentPost } = await supabase.from('posts').select('is_pinned').eq('id', postId).single()
   const { error } = await supabase
     .from('posts')
-    .update({ is_pinned: !currentPost?.is_pinned })
+    .update({ is_pinned: !post?.is_pinned })
     .eq('id', postId)
 
   if (error) return { error: error.message }
 
-  revalidatePath(`/spaces/${spaceSlug}/posts/${postId}`)
-  revalidatePath(`/spaces/${spaceSlug}`)
+  const realSlug = space?.slug ?? spaceSlug
+  revalidatePath(`/spaces/${realSlug}/posts/${postId}`)
+  revalidatePath(`/spaces/${realSlug}`)
   return { success: true }
 }
 
@@ -197,3 +260,6 @@ export async function loadMorePosts(
 
   return { posts: (data ?? []) as unknown as PostItem[] }
 }
+
+// Export helper for post detail page to use
+export { htmlToPlainText }
