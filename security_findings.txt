@@ -1,0 +1,230 @@
+src/middleware.ts:const authRoutes = ['/login', '/register', '/forgot-password']
+src/middleware.ts:  } = await supabase.auth.getUser()
+src/middleware.ts:  const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r))
+src/types/database.ts:export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
+src/types/database.ts:          key: string
+src/types/database.ts:          key: string
+src/types/database.ts:            foreignKeyName: "spaces_created_by_fkey"
+src/types/database.ts:            foreignKeyName: "space_members_space_id_fkey"
+src/types/database.ts:            foreignKeyName: "space_members_user_id_fkey"
+src/types/database.ts:          author_id: string
+src/types/database.ts:          author_id: string
+src/types/database.ts:            foreignKeyName: "posts_space_id_fkey"
+src/types/database.ts:            foreignKeyName: "posts_author_id_fkey"
+src/types/database.ts:            columns: ["author_id"]
+src/types/database.ts:          author_id: string
+src/types/database.ts:          author_id: string
+src/types/database.ts:            foreignKeyName: "comments_post_id_fkey"
+src/types/database.ts:            foreignKeyName: "comments_author_id_fkey"
+src/types/database.ts:            columns: ["author_id"]
+src/types/database.ts:            foreignKeyName: "comments_parent_id_fkey"
+src/types/database.ts:            foreignKeyName: "reactions_user_id_fkey"
+src/types/database.ts:            foreignKeyName: "notifications_user_id_fkey"
+src/types/database.ts:            foreignKeyName: "conversation_participants_conversation_id_fkey"
+src/types/database.ts:            foreignKeyName: "conversation_participants_user_id_fkey"
+src/types/database.ts:            foreignKeyName: "messages_conversation_id_fkey"
+src/types/database.ts:            foreignKeyName: "messages_sender_id_fkey"
+src/app/auth/callback/route.ts:    const { error } = await supabase.auth.exchangeCodeForSession(code)
+src/app/auth/callback/route.ts:  return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`)
+src/app/admin/content/page.tsx:                  <tr key={post.id}>
+src/app/admin/content/page.tsx:                  <tr key={comment.id}>
+src/app/admin/layout.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/admin/members/page.tsx:              <tr key={member.id} className={member.is_banned ? 'opacity-50' : ''}>
+src/app/api/upload/route.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/app/api/upload/route.ts:  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+src/app/(main)/settings/profile/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/messages/layout.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/messages/[id]/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/new/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/page.tsx:                {mySpaces.map(space => <SpaceCard key={space.id} {...space} />)}
+src/app/(main)/spaces/page.tsx:                {otherSpaces.map(space => <SpaceCard key={space.id} {...space} />)}
+src/app/(main)/spaces/[slug]/settings/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/posts/new/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/posts/[id]/edit/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/posts/[id]/edit/page.tsx:    .select('id, title, content, author_id')
+src/app/(main)/spaces/[slug]/posts/[id]/edit/page.tsx:  const post = rawPost as { id: string; title: string; content: string; author_id: string } | null
+src/app/(main)/spaces/[slug]/posts/[id]/edit/page.tsx:  const canEdit = post.author_id === user.id || profile?.role === 'admin' || profile?.role === 'moderator'
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:  author_id: string
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:  author_id: string
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:      id, title, content, created_at, updated_at, is_pinned, author_id, space_id,
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:      profiles!author_id(id, username, display_name, avatar_url)
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:      .select('id, content, created_at, updated_at, parent_id, author_id, profiles!author_id(id, username, display_name, avatar_url)')
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:  const isAuthor = user?.id === post.author_id
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:    author: {
+src/app/(main)/spaces/[slug]/posts/[id]/page.tsx:      id: c.profiles?.id ?? c.author_id,
+src/app/(main)/spaces/[slug]/members/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/members/page.tsx:              key={member.id}
+src/app/(main)/spaces/[slug]/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/spaces/[slug]/page.tsx:      .select('id, title, content, created_at, is_pinned, profiles!author_id(username, display_name, avatar_url)')
+src/app/(main)/search/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/profile/[username]/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/profile/[username]/page.tsx:    .eq('author_id', profile.id)
+src/app/(main)/profile/[username]/page.tsx:              <Card key={post.id} className="hover:shadow-sm transition-shadow">
+src/app/(main)/layout.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/layout.tsx:    .select('key, value')
+src/app/(main)/layout.tsx:    .eq('key', 'community_name')
+src/app/(main)/layout.tsx:  const communityName = (settingsRows as { key: string; value: string } | null)?.value || 'Community'
+src/app/(main)/page.tsx:  const { data: { user } } = await supabase.auth.getUser()
+src/app/(main)/page.tsx:      .select('id, title, content, created_at, is_pinned, spaces(name, slug), profiles!author_id(username, display_name, avatar_url)')
+src/app/(main)/page.tsx:            <Card key={post.id} className="hover:shadow-sm transition-shadow">
+src/app/(auth)/register/page.tsx:  password: z.string().min(8, 'Mật khẩu tối thiểu 8 ký tự').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, 'Mật khẩu phải có chữ hoa, chữ thường và số'),
+src/app/(auth)/register/page.tsx:}).refine(d => d.password === d.confirmPassword, {
+src/app/(auth)/register/page.tsx:    const { data: signUpData, error } = await supabase.auth.signUp({
+src/app/(auth)/register/page.tsx:      password: data.password,
+src/app/(auth)/register/page.tsx:      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+src/app/(auth)/register/page.tsx:            <Label htmlFor="password">Mật khẩu</Label>
+src/app/(auth)/register/page.tsx:            <Input id="password" type="password" {...register('password')} />
+src/app/(auth)/register/page.tsx:            {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
+src/app/(auth)/register/page.tsx:            <Input id="confirmPassword" type="password" {...register('confirmPassword')} />
+src/app/(auth)/forgot-password/page.tsx:    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+src/app/(auth)/forgot-password/page.tsx:      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+src/app/(auth)/reset-password/page.tsx:  password: z.string().min(8, 'Mật khẩu tối thiểu 8 ký tự'),
+src/app/(auth)/reset-password/page.tsx:}).refine(d => d.password === d.confirmPassword, {
+src/app/(auth)/reset-password/page.tsx:    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+src/app/(auth)/reset-password/page.tsx:        router.push('/forgot-password')
+src/app/(auth)/reset-password/page.tsx:    const { error } = await supabase.auth.updateUser({ password: data.password })
+src/app/(auth)/reset-password/page.tsx:    await supabase.auth.signOut()
+src/app/(auth)/reset-password/page.tsx:            <Label htmlFor="password">Mật khẩu mới</Label>
+src/app/(auth)/reset-password/page.tsx:            <Input id="password" type="password" {...register('password')} />
+src/app/(auth)/reset-password/page.tsx:            {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
+src/app/(auth)/reset-password/page.tsx:            <Input id="confirmPassword" type="password" {...register('confirmPassword')} />
+src/app/(auth)/login/page.tsx:  password: z.string().min(1, 'Vui lòng nhập mật khẩu'),
+src/app/(auth)/login/page.tsx:    const { error } = await supabase.auth.signInWithPassword(data)
+src/app/(auth)/login/page.tsx:              <Label htmlFor="password">Mật khẩu</Label>
+src/app/(auth)/login/page.tsx:              <Link href="/forgot-password" className="text-xs text-muted-foreground hover:underline">
+src/app/(auth)/login/page.tsx:            <Input id="password" type="password" {...register('password')} />
+src/app/(auth)/login/page.tsx:            {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
+src/components/ui/tabs.tsx:import { cva, type VariantProps } from "class-variance-authority"
+src/components/ui/badge.tsx:import { cva, type VariantProps } from "class-variance-authority"
+src/components/ui/button.tsx:import { cva, type VariantProps } from "class-variance-authority"
+src/components/comments/comment-list.tsx:              key={comment.id}
+src/components/comments/comment-item.tsx:  author: {
+src/components/comments/comment-item.tsx:  const isAuthor = currentUser?.id === comment.author.id
+src/components/comments/comment-item.tsx:          <Link key={i} href={`/profile/${username}`} className="text-primary font-medium hover:underline">
+src/components/comments/comment-item.tsx:      <Link href={`/profile/${comment.author.username}`}>
+src/components/comments/comment-item.tsx:          <AvatarImage src={comment.author.avatar_url ?? undefined} />
+src/components/comments/comment-item.tsx:            {(comment.author.display_name ?? comment.author.username).charAt(0).toUpperCase()}
+src/components/comments/comment-item.tsx:            <Link href={`/profile/${comment.author.username}`} className="font-medium text-sm hover:underline">
+src/components/comments/comment-item.tsx:              {comment.author.display_name ?? comment.author.username}
+src/components/comments/comment-item.tsx:              placeholder={`Trả lời @${comment.author.username}...`}
+src/components/comments/comment-item.tsx:                key={reply.id}
+src/components/comments/comment-form.tsx:    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+src/components/messages/new-conversation-dialog.tsx:                    key={user.id}
+src/components/messages/conversation-list.tsx:            key={conv.id}
+src/components/messages/message-thread.tsx:    if (e.key === 'Enter' && !e.shiftKey) {
+src/components/messages/message-thread.tsx:              <div key={msg.id} className={cn('flex gap-2', isMe ? 'flex-row-reverse' : 'flex-row')}>
+src/components/messages/dm-badge.tsx:      const { data: { user } } = await supabase.auth.getUser()
+src/components/messages/dm-badge.tsx:        .neq('sender_id', (await supabase.auth.getUser()).data.user?.id ?? '')
+src/components/posts/load-more-posts.tsx:          <Card key={post.id} className="hover:shadow-sm transition-shadow">
+src/components/posts/post-actions.tsx:      {/* More actions (author / admin) */}
+src/components/auth/oauth-buttons.tsx:    await supabase.auth.signInWithOAuth({
+src/components/auth/oauth-buttons.tsx:        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/')}`,
+src/components/layout/notification-bell.tsx:      const { data: { user } } = await supabase.auth.getUser()
+src/components/layout/notification-dropdown.tsx:      const { data: { user } } = await supabase.auth.getUser()
+src/components/layout/notification-dropdown.tsx:    const { data: { user } } = await supabase.auth.getUser()
+src/components/layout/notification-dropdown.tsx:    const { data: { user } } = await supabase.auth.getUser()
+src/components/layout/notification-dropdown.tsx:            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+src/components/layout/notification-dropdown.tsx:                key={notif.id}
+src/components/layout/user-menu.tsx:    await supabase.auth.signOut()
+src/components/layout/sidebar.tsx:            <Link key={href} href={href}>
+src/components/layout/sidebar.tsx:                <Link key={space.id} href={`/spaces/${space.slug}`}>
+src/components/spaces/edit-space-form.tsx:              key={e}
+src/components/spaces/create-space-form.tsx:              key={e}
+src/components/admin/admin-nav.tsx:            <Link key={href} href={href}>
+src/components/admin/change-role-button.tsx:            key={value}
+src/components/shared/post-card-skeleton.tsx:      {[...Array(count)].map((_, i) => <PostCardSkeleton key={i} />)}
+src/components/search/post-result-card.tsx:  const author = post.profiles
+src/components/search/post-result-card.tsx:        {author && (
+src/components/search/post-result-card.tsx:              <AvatarImage src={author.avatar_url ?? undefined} />
+src/components/search/post-result-card.tsx:                {(author.display_name ?? author.username).charAt(0).toUpperCase()}
+src/components/search/post-result-card.tsx:            <span>{author.display_name ?? author.username}</span>
+src/components/search/search-tabs.tsx:    { key: 'posts', label: `Bài viết (${posts.length})` },
+src/components/search/search-tabs.tsx:    { key: 'members', label: `Thành viên (${members.length})` },
+src/components/search/search-tabs.tsx:    { key: 'spaces', label: `Spaces (${spaces.length})` },
+src/components/search/search-tabs.tsx:            key={t.key}
+src/components/search/search-tabs.tsx:            href={buildUrl({ tab: t.key, space: '' })}
+src/components/search/search-tabs.tsx:              tab === t.key
+src/components/search/search-tabs.tsx:                  key={s.slug}
+src/components/search/search-tabs.tsx:              {posts.map(post => <PostResultCard key={post.id} post={post} />)}
+src/components/search/search-tabs.tsx:              {members.map(m => <MemberResultCard key={m.id} member={m} />)}
+src/components/search/search-tabs.tsx:              {spaces.map(s => <SpaceCard key={s.id} {...s} />)}
+src/components/profile/social-links.tsx:  key: keyof SocialLinks
+src/components/profile/social-links.tsx:  { key: 'twitter', icon: Link, label: 'Twitter / X', prefix: 'https://twitter.com/' },
+src/components/profile/social-links.tsx:  { key: 'linkedin', icon: Link, label: 'LinkedIn', prefix: 'https://linkedin.com/in/' },
+src/components/profile/social-links.tsx:  { key: 'github', icon: Link, label: 'GitHub', prefix: 'https://github.com/' },
+src/components/profile/social-links.tsx:  { key: 'website', icon: Globe, label: 'Website', prefix: '' },
+src/components/profile/social-links.tsx:function buildHref(key: keyof SocialLinks, value: string, prefix: string): string | null {
+src/components/profile/social-links.tsx:  if (key === 'website') {
+src/components/profile/social-links.tsx:  const active = items.filter(({ key }) => links[key])
+src/components/profile/social-links.tsx:      {active.map(({ key, icon: Icon, label, prefix }) => {
+src/components/profile/social-links.tsx:        const value = links[key]!
+src/components/profile/social-links.tsx:        const href = buildHref(key, value, prefix)
+src/components/profile/social-links.tsx:            key={key}
+src/components/profile/edit-profile-form.tsx:          <div key={name} className="space-y-1">
+src/lib/supabase/admin.ts:      auth: {
+src/lib/actions/comments.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/comments.ts:      author_id: user.id,
+src/lib/actions/comments.ts:  // Create notification for post author (if not self-comment)
+src/lib/actions/comments.ts:    .select('author_id, title, space_id')
+src/lib/actions/comments.ts:  if (post && post.author_id !== user.id) {
+src/lib/actions/comments.ts:      user_id: post.author_id,
+src/lib/actions/comments.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/comments.ts:    .select('author_id')
+src/lib/actions/comments.ts:  if (comment?.author_id !== user.id && profile?.role !== 'admin' && profile?.role !== 'moderator') {
+src/lib/actions/comments.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/comments.ts:    .select('author_id')
+src/lib/actions/comments.ts:  if (comment?.author_id !== user.id && profile?.role !== 'admin' && profile?.role !== 'moderator') {
+src/lib/actions/comments.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/search.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/search.ts:    .select('id, title, content, created_at, spaces!space_id(name, slug, icon, is_private), profiles!author_id(username, display_name, avatar_url)')
+src/lib/actions/search.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/messages.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/messages.ts:  // but we need to check unique_key before any participant row exists.
+src/lib/actions/messages.ts:  // Bug 1 fix: use atomic upsert via unique_key to prevent race condition duplicate conversations.
+src/lib/actions/messages.ts:  // unique_key = sorted pair of user IDs → same key regardless of who initiates first.
+src/lib/actions/messages.ts:  // Migration 005 adds the unique_key column + UNIQUE index to conversations table.
+src/lib/actions/messages.ts:  // Bypass generated types (unique_key added by migration 005, types not regenerated yet)
+src/lib/actions/messages.ts:  // Try to find existing conversation by unique_key first
+src/lib/actions/messages.ts:    .eq('unique_key', uniqueKey)
+src/lib/actions/messages.ts:  // Insert with unique_key — if concurrent insert races us, ON CONFLICT returns error code 23505
+src/lib/actions/messages.ts:    .insert({ unique_key: uniqueKey })
+src/lib/actions/messages.ts:        .eq('unique_key', uniqueKey)
+src/lib/actions/messages.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/messages.ts:  if (!user) return { error: 'Unauthorized' }
+src/lib/actions/messages.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/messages.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/admin.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/admin.ts:  const { error } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
+src/lib/actions/admin.ts:    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+src/lib/actions/admin.ts:      .select('id, title, created_at, author_id, space_id, profiles!author_id(username, display_name), spaces!space_id(name, slug)')
+src/lib/actions/admin.ts:      .select('id, content, created_at, author_id, post_id, profiles!author_id(username, display_name)')
+src/lib/actions/admin.ts:    settings[item.key] = item.value
+src/lib/actions/admin.ts:    .map(([key, value]) => ({ key, value: value!, updated_at: now }))
+src/lib/actions/admin.ts:      .upsert(update, { onConflict: 'key' })
+src/lib/actions/spaces.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/spaces.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/spaces.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/spaces.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/spaces.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:    .insert({ space_id: spaceId, author_id: user.id, title, content })
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:  const { data: post } = await supabase.from('posts').select('author_id, space_id').eq('id', postId).single()
+src/lib/actions/posts.ts:  if (post.author_id !== user.id && profile?.role !== 'admin' && profile?.role !== 'moderator') {
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:  const { data: post } = await supabase.from('posts').select('author_id, space_id').eq('id', postId).single()
+src/lib/actions/posts.ts:  if (post.author_id !== user.id && profile?.role !== 'admin' && profile?.role !== 'moderator') {
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/posts.ts:    .select('id, title, content, created_at, is_pinned, profiles!author_id(username, display_name, avatar_url)')
+src/lib/actions/profile.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/actions/profile.ts:  const { data: { user } } = await supabase.auth.getUser()
+src/lib/rate-limit.ts:  store.forEach((entry, key) => {
+src/lib/rate-limit.ts:    if (now > entry.resetAt) store.delete(key)
+src/lib/rate-limit.ts: * Check rate limit for a given key (e.g. user ID or IP address).
+src/lib/rate-limit.ts:  key: string,
+src/lib/rate-limit.ts:  const entry = store.get(key)
+src/lib/rate-limit.ts:    store.set(key, { count: 1, resetAt })

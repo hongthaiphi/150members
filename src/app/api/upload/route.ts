@@ -43,8 +43,8 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  // Rate limit: 20 uploads per minute per user
-  const rl = checkRateLimit(`upload:${user.id}`, { limit: 20, windowMs: 60_000 })
+  // Rate limit: 20 uploads per minute per user (enforced via Upstash Redis across all instances)
+  const rl = await checkRateLimit(`upload:${user.id}`)
   if (!rl.success) {
     return NextResponse.json(
       { error: 'Quá nhiều yêu cầu. Vui lòng thử lại sau.' },

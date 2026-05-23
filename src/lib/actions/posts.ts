@@ -192,6 +192,34 @@ export async function toggleReaction(targetId: string, targetType: 'post' | 'com
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  // M-1: Check space membership for private spaces before allowing reaction
+  let spaceId: string | null = null
+  if (targetType === 'post') {
+    const { data: p } = await supabase.from('posts').select('space_id').eq('id', targetId).single()
+    spaceId = p?.space_id ?? null
+  } else {
+    const { data: c } = await supabase
+      .from('comments')
+      .select('posts!post_id(space_id)')
+      .eq('id', targetId)
+      .single()
+    const row = c as unknown as { posts: { space_id: string } | null } | null
+    spaceId = row?.posts?.space_id ?? null
+  }
+
+  if (spaceId) {
+    const { data: spaceRow } = await supabase.from('spaces').select('is_private').eq('id', spaceId).single()
+    if (spaceRow?.is_private) {
+      const { data: member } = await supabase
+        .from('space_members')
+        .select('user_id')
+        .eq('space_id', spaceId)
+        .eq('user_id', user.id)
+        .single()
+      if (!member) return { error: 'Bạn không phải thành viên của Space này' }
+    }
+  }
+
   const { data: existing } = await supabase
     .from('reactions')
     .select('id')
