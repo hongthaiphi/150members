@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import sanitizeHtml from 'sanitize-html'
 
 const COMMENT_MAX = 5_000
@@ -30,6 +31,30 @@ export async function createComment(
   if (!sanitized) return { error: 'Nội dung bình luận không được để trống' }
   if (sanitized.length > COMMENT_MAX) return { error: `Bình luận tối đa ${COMMENT_MAX} ký tự` }
 
+  // H-2: Check space membership before allowing comment on private space
+  const { data: postForCheck } = await supabase
+    .from('posts')
+    .select('space_id')
+    .eq('id', postId)
+    .single()
+  if (!postForCheck) return { error: 'Bài viết không tồn tại' }
+
+  const { data: spaceForCheck } = await supabase
+    .from('spaces')
+    .select('is_private')
+    .eq('id', postForCheck.space_id)
+    .single()
+
+  if (spaceForCheck?.is_private) {
+    const { data: member } = await supabase
+      .from('space_members')
+      .select('user_id')
+      .eq('space_id', postForCheck.space_id)
+      .eq('user_id', user.id)
+      .single()
+    if (!member) return { error: 'Bạn không phải thành viên của Space này' }
+  }
+
   const { data: comment, error } = await supabase
     .from('comments')
     .insert({
@@ -51,8 +76,9 @@ export async function createComment(
     .single()
 
   if (post && post.author_id !== user.id) {
-    // Store actor_id (not actor_name) to avoid stale snapshot — display fetches fresh profile
-    await supabase.from('notifications').insert({
+    // M-2: Use admin client so client cannot forge notifications for arbitrary users
+    const admin = createAdminClient()
+    await admin.from('notifications').insert({
       user_id: post.author_id,
       type: 'reply' as const,
       data: {

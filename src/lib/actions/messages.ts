@@ -122,19 +122,7 @@ export async function markConversationRead(conversationId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  const { data: participant } = await supabase
-    .from('conversation_participants')
-    .select('user_id')
-    .eq('conversation_id', conversationId)
-    .eq('user_id', user.id)
-    .single()
-
-  if (!participant) return
-
-  await supabase
-    .from('messages')
-    .update({ is_read: true })
-    .eq('conversation_id', conversationId)
-    .neq('sender_id', user.id)
-    .eq('is_read', false)
+  // H-1: Use SECURITY DEFINER RPC instead of direct UPDATE to prevent tautology bypass
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase as unknown as any).rpc('mark_messages_read', { p_conversation_id: conversationId })
 }
