@@ -3,6 +3,7 @@ import { Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { searchPosts, searchMembers, searchSpaces } from '@/lib/actions/search'
 import { SearchTabs } from '@/components/search/search-tabs'
+import { MobileSearchInput } from '@/components/search/mobile-search-input'
 import type { Metadata } from 'next'
 
 type Props = {
@@ -21,12 +22,17 @@ export default async function SearchPage({ searchParams }: Props) {
 
   if (!query) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-        <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h1 className="text-xl font-semibold mb-2">Tìm kiếm</h1>
-        <p className="text-muted-foreground text-sm">
-          Nhập từ khóa vào thanh tìm kiếm để tìm bài viết, thành viên và Spaces.
-        </p>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <Suspense>
+          <MobileSearchInput />
+        </Suspense>
+        <div className="py-8 text-center">
+          <Search className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h1 className="text-xl font-semibold mb-2">Tìm kiếm</h1>
+          <p className="text-muted-foreground text-sm">
+            Nhập từ khóa để tìm bài viết, thành viên và Spaces.
+          </p>
+        </div>
       </div>
     )
   }
@@ -62,6 +68,10 @@ export default async function SearchPage({ searchParams }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
+      <Suspense>
+        <MobileSearchInput />
+      </Suspense>
+
       <div className="mb-6">
         <h1 className="text-xl font-semibold">
           Kết quả cho &ldquo;{query}&rdquo;

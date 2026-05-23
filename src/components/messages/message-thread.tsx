@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
-import { Send, Check, CheckCheck } from 'lucide-react'
+import { Send, Check, CheckCheck, ArrowLeft } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -111,6 +111,13 @@ export function MessageThread({ conversationId, initialMessages, currentUserId, 
     <div className="flex flex-col h-full">
       {/* Header */}
       <div className="h-14 border-b flex items-center gap-3 px-4 shrink-0">
+        <Link
+          href="/messages"
+          className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          aria-label="Quay lại"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </Link>
         <Avatar className="h-8 w-8">
           <AvatarImage src={otherUser.avatar_url ?? undefined} />
           <AvatarFallback className="text-xs">

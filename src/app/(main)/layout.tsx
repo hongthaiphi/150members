@@ -47,7 +47,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar spaces={spaces} profile={profile} className="hidden md:flex" />
       <MobileSidebar spaces={spaces} profile={profile} />
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div className="flex flex-col flex-1 min-w-0 overflow-hidden pt-14 md:pt-0">
         <Header profile={profile} />
         <main className="flex-1 overflow-y-auto">
           {children}

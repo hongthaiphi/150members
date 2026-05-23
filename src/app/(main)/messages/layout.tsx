@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ConversationList } from '@/components/messages/conversation-list'
 import { NewConversationDialog } from '@/components/messages/new-conversation-dialog'
+import { MessagesContainer } from '@/components/messages/messages-container'
 
 export type OtherUser = {
   id: string
@@ -95,20 +96,21 @@ export default async function MessagesLayout({ children }: { children: React.Rea
   }
 
   return (
-    <div className="flex h-full">
-      <div className="w-72 border-r shrink-0 flex flex-col">
-        <div className="h-14 flex items-center justify-between px-4 border-b shrink-0">
-          <h2 className="font-semibold">Tin nhắn</h2>
-          <NewConversationDialog />
-        </div>
-        <ConversationList
-          initialConversations={conversations}
-          currentUserId={user?.id ?? ''}
-        />
-      </div>
-      <div className="flex-1 min-w-0 flex flex-col">
-        {children}
-      </div>
-    </div>
+    <MessagesContainer
+      sidebar={
+        <>
+          <div className="h-14 flex items-center justify-between px-4 border-b shrink-0">
+            <h2 className="font-semibold">Tin nhắn</h2>
+            <NewConversationDialog />
+          </div>
+          <ConversationList
+            initialConversations={conversations}
+            currentUserId={user?.id ?? ''}
+          />
+        </>
+      }
+    >
+      {children}
+    </MessagesContainer>
   )
 }
