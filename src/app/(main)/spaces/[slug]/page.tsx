@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,9 +16,20 @@ interface Props { params: { slug: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
-  const { data } = await supabase.from('spaces').select('name, description').eq('slug', params.slug).single()
+  const { data } = await supabase.from('spaces').select('name, description, cover_image').eq('slug', params.slug).single()
   if (!data) return { title: 'Space không tồn tại' }
-  return { title: `${data.name} — Community`, description: data.description ?? undefined }
+  const url = `/spaces/${params.slug}`
+  return {
+    title: data.name,
+    description: data.description ?? undefined,
+    openGraph: {
+      title: data.name,
+      description: data.description ?? undefined,
+      url,
+      ...(data.cover_image ? { images: [{ url: data.cover_image }] } : {}),
+    },
+    alternates: { canonical: url },
+  }
 }
 
 type PostRow = {
@@ -77,9 +89,15 @@ export default async function SpaceDetailPage({ params }: Props) {
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Cover image */}
       {space.cover_image && (
-        <div className="h-40 rounded-xl overflow-hidden mb-6">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={space.cover_image} alt={space.name} className="w-full h-full object-cover" />
+        <div className="relative h-40 rounded-xl overflow-hidden mb-6">
+          <Image
+            src={space.cover_image}
+            alt={space.name}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 768px"
+            priority
+          />
         </div>
       )}
 

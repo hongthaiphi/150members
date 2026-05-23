@@ -19,21 +19,44 @@ interface Props { params: { slug: string; id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data } = await supabase
     .from('posts')
-    .select('title, content')
+    .select('title, content, spaces!inner(id, name, slug, is_private)')
     .eq('id', params.id)
     .single()
 
-  const post = data as { title: string; content: string } | null
+  const post = data as { title: string; content: string; spaces: { id: string; name: string; slug: string; is_private: boolean } } | null
   if (!post) return { title: 'Bài viết không tồn tại' }
 
-  // Bug 4 fix: use proper HTML-to-text instead of naive regex that can leak tags
+  // C-1: Do not expose title/description of private space posts to non-members
+  if (post.spaces.is_private) {
+    const { data: member } = user
+      ? await supabase.from('space_members').select('user_id')
+          .eq('space_id', post.spaces.id).eq('user_id', user.id).single()
+      : { data: null }
+    if (!member) return { title: 'Bài viết không tồn tại' }
+  }
+
   const description = htmlToPlainText(post.content).slice(0, 160)
+  const url = `/spaces/${post.spaces.slug}/posts/${params.id}`
 
   return {
-    title: `${post.title} — Community`,
+    title: post.title,
     description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      url,
+    },
+    twitter: {
+      card: 'summary',
+      title: post.title,
+      description,
+    },
+    alternates: { canonical: url },
   }
 }
 
@@ -129,6 +152,9 @@ export default async function PostDetailPage({ params }: Props) {
   const isAuthor = user?.id === post.author_id
   const isCreator = user?.id === space.created_by
   const canManage = isCreator || userRole === 'admin' || userRole === 'moderator'
+
+  // C-1: Block access to private space posts for non-members
+  if (space.is_private && !isMember && !canManage) notFound()
 
   // Build CommentData with nested replies
   const commentData: CommentData[] = comments.map(c => ({

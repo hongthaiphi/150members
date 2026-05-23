@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { toast } from 'sonner'
 import { searchUsersForDM, getOrCreateConversation } from '@/lib/actions/messages'
 
 type UserResult = {
@@ -22,7 +23,6 @@ export function NewConversationDialog() {
   const [results, setResults] = useState<UserResult[]>([])
   const [searching, setSearching] = useState(false)
   const [startingId, setStartingId] = useState<string | null>(null)
-  const [, startTransition] = useTransition()
 
   async function handleSearch(value: string) {
     setQuery(value)
@@ -38,16 +38,22 @@ export function NewConversationDialog() {
 
   async function handleSelect(userId: string) {
     setStartingId(userId)
-    startTransition(async () => {
-      const convId = await getOrCreateConversation(userId)
-      if (convId) {
+    try {
+      const res = await getOrCreateConversation(userId)
+      if (res.id) {
         setOpen(false)
         setQuery('')
         setResults([])
-        router.push(`/messages/${convId}`)
+        router.push(`/messages/${res.id}`)
+      } else {
+        toast.error(res.error || 'Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
       }
+    } catch (err) {
+      console.error('[NewConversationDialog]', err)
+      toast.error('Đã xảy ra lỗi: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
       setStartingId(null)
-    })
+    }
   }
 
   function handleOpenChange(val: boolean) {

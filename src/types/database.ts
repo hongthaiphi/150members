@@ -15,6 +15,7 @@ export interface Database {
           avatar_url: string | null
           bio: string | null
           role: UserRole
+          is_banned: boolean
           social_links: Json | null
           created_at: string
           updated_at: string
@@ -26,6 +27,7 @@ export interface Database {
           avatar_url?: string | null
           bio?: string | null
           role?: UserRole
+          is_banned?: boolean
           social_links?: Json | null
           created_at?: string
           updated_at?: string
@@ -37,7 +39,25 @@ export interface Database {
           avatar_url?: string | null
           bio?: string | null
           role?: UserRole
+          is_banned?: boolean
           social_links?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      community_settings: {
+        Row: {
+          key: string
+          value: string
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          value: string
+          updated_at?: string
+        }
+        Update: {
+          value?: string
           updated_at?: string
         }
         Relationships: []

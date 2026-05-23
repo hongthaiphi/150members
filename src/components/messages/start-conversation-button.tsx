@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import { getOrCreateConversation } from '@/lib/actions/messages'
 
 interface StartConversationButtonProps {
@@ -16,11 +17,19 @@ export function StartConversationButton({ otherUserId }: StartConversationButton
 
   async function handleClick() {
     setLoading(true)
-    const convId = await getOrCreateConversation(otherUserId)
-    if (convId) {
-      router.push(`/messages/${convId}`)
+    try {
+      const res = await getOrCreateConversation(otherUserId)
+      if (res.id) {
+        router.push(`/messages/${res.id}`)
+      } else {
+        toast.error(res.error || 'Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
+      }
+    } catch (err) {
+      console.error('[StartConversationButton]', err)
+      toast.error('Đã xảy ra lỗi: ' + (err instanceof Error ? err.message : String(err)))
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (

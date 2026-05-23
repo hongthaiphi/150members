@@ -19,11 +19,26 @@ export async function updateProfile(data: ProfileFormData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  // H-4: Server-side length validation — client Zod can be bypassed via direct SA call
+  const displayName = (data.display_name ?? '').trim()
+  const bio = (data.bio ?? '').trim()
+  if (displayName.length > 50) return { error: 'Tên hiển thị tối đa 50 ký tự' }
+  if (bio.length > 300) return { error: 'Bio tối đa 300 ký tự' }
+
+  const { twitter, linkedin, website, github } = data.social_links ?? {}
+  if (twitter && twitter.length > 100) return { error: 'Twitter handle tối đa 100 ký tự' }
+  if (linkedin && linkedin.length > 100) return { error: 'LinkedIn handle tối đa 100 ký tự' }
+  if (github && github.length > 100) return { error: 'GitHub handle tối đa 100 ký tự' }
+  if (website) {
+    if (website.length > 200) return { error: 'Website URL tối đa 200 ký tự' }
+    if (!/^https?:\/\//i.test(website)) return { error: 'Website phải bắt đầu bằng http:// hoặc https://' }
+  }
+
   const { error } = await supabase
     .from('profiles')
     .update({
-      display_name: data.display_name || null,
-      bio: data.bio || null,
+      display_name: displayName || null,
+      bio: bio || null,
       social_links: data.social_links,
       updated_at: new Date().toISOString(),
     })

@@ -17,9 +17,10 @@ type Space = { id: string; name: string; slug: string; icon: string | null }
 interface MobileSidebarProps {
   spaces: Space[]
   profile: Profile | null
+  communityName?: string
 }
 
-export function MobileSidebar({ spaces, profile }: MobileSidebarProps) {
+export function MobileSidebar({ spaces, profile, communityName = 'Community' }: MobileSidebarProps) {
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
 
@@ -34,7 +35,7 @@ export function MobileSidebar({ spaces, profile }: MobileSidebarProps) {
           <Menu className="h-5 w-5" />
         </SheetTrigger>
         <SheetContent side="left" className="p-0 w-64">
-          <Sidebar spaces={spaces} profile={profile} className="flex h-full" />
+          <Sidebar spaces={spaces} profile={profile} communityName={communityName} className="flex h-full" />
         </SheetContent>
       </Sheet>
 
