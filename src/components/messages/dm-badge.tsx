@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { getDmOverview } from '@/lib/actions/messages'
 
 export function DmBadge() {
   const supabase = createClient()
@@ -18,24 +19,12 @@ export function DmBadge() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !mounted) return
 
-      const { data: participations } = await supabase
-        .from('conversation_participants')
-        .select('conversation_id')
-        .eq('user_id', user.id)
-
-      const convIds = (participations ?? []).map(p => p.conversation_id)
+      // Lấy convIds + số chưa đọc qua server action (admin client, không bị RLS đệ quy)
+      const { convIds, unread: initialUnread } = await getDmOverview()
       convIdsRef.current = convIds
 
+      if (mounted) setUnread(initialUnread)
       if (convIds.length === 0) return
-
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id', convIds)
-        .neq('sender_id', user.id)
-        .eq('is_read', false)
-
-      if (mounted) setUnread(count ?? 0)
 
       const filter = `conversation_id=in.(${convIds.join(',')})`
       const channel = supabase
@@ -55,14 +44,8 @@ export function DmBadge() {
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table: 'messages', filter },
           () => {
-            // Re-fetch count on any read status update
-            supabase
-              .from('messages')
-              .select('*', { count: 'exact', head: true })
-              .in('conversation_id', convIds)
-              .neq('sender_id', user.id)
-              .eq('is_read', false)
-              .then(({ count: c }) => { if (mounted) setUnread(c ?? 0) })
+            // Re-fetch count on any read status update (server action, no RLS recursion)
+            getDmOverview().then(({ unread: u }) => { if (mounted) setUnread(u) })
           }
         )
         .subscribe()
@@ -88,13 +71,8 @@ export function DmBadge() {
     const convIds = convIdsRef.current
     if (convIds.length === 0) return
     const t = setTimeout(async () => {
-      const { count } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id', convIds)
-        .neq('sender_id', (await supabase.auth.getUser()).data.user?.id ?? '')
-        .eq('is_read', false)
-      setUnread(count ?? 0)
+      const { unread: u } = await getDmOverview()
+      setUnread(u)
     }, 500)
     return () => clearTimeout(t)
   // eslint-disable-next-line react-hooks/exhaustive-deps

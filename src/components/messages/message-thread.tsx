@@ -95,8 +95,14 @@ export function MessageThread({ conversationId, initialMessages, currentUserId, 
   async function handleSend() {
     if (!content.trim() || sending) return
     setSending(true)
-    const { error } = await sendMessage(conversationId, content)
-    if (!error) setContent('')
+    const { error, message } = await sendMessage(conversationId, content)
+    if (!error) {
+      setContent('')
+      // Optimistic: hiển thị ngay tin vừa gửi (không phụ thuộc realtime/RLS)
+      if (message) {
+        setMessages(prev => prev.some(m => m.id === message.id) ? prev : [...prev, message])
+      }
+    }
     setSending(false)
   }
 

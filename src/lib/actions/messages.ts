@@ -110,29 +110,37 @@ export async function sendMessage(conversationId: string, content: string) {
   const trimmed = content.trim()
   if (!trimmed) return { error: 'Tin nhắn không được để trống' }
 
-  const { data: member } = await supabase
+  // Admin client bypass RLS — tránh lỗi recursive policy (42P17) trên
+  // conversation_participants. Quyền gửi vẫn được kiểm tra tường minh.
+  const admin = createAdminClient()
+
+  const { data: member } = await admin
     .from('conversation_participants')
     .select('user_id')
     .eq('conversation_id', conversationId)
     .eq('user_id', user.id)
-    .single()
+    .maybeSingle()
   if (!member) return { error: 'Không có quyền gửi tin nhắn' }
 
-  const { error } = await supabase.from('messages').insert({
-    conversation_id: conversationId,
-    sender_id: user.id,
-    content: trimmed,
-  })
+  const { data: inserted, error } = await admin
+    .from('messages')
+    .insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: trimmed,
+    })
+    .select('*')
+    .single()
 
   if (!error) {
-    await supabase
+    await admin
       .from('conversations')
       .update({ updated_at: new Date().toISOString() })
       .eq('id', conversationId)
     revalidatePath(`/messages/${conversationId}`)
   }
 
-  return { error: error?.message }
+  return { error: error?.message, message: inserted ?? undefined }
 }
 
 export async function searchUsersForDM(query: string): Promise<Array<{ id: string; username: string; display_name: string | null; avatar_url: string | null }>> {
@@ -149,6 +157,32 @@ export async function searchUsersForDM(query: string): Promise<Array<{ id: strin
     .limit(8)
 
   return (data ?? []) as Array<{ id: string; username: string; display_name: string | null; avatar_url: string | null }>
+}
+
+export async function getDmOverview(): Promise<{ convIds: string[]; unread: number }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { convIds: [], unread: 0 }
+
+  // Admin client bypass RLS — client component không dùng được admin nên
+  // badge gọi server action này để lấy số liệu (tránh recursive RLS 42P17).
+  const admin = createAdminClient()
+  const { data: parts } = await admin
+    .from('conversation_participants')
+    .select('conversation_id')
+    .eq('user_id', user.id)
+
+  const convIds = (parts ?? []).map((p: { conversation_id: string }) => p.conversation_id)
+  if (convIds.length === 0) return { convIds: [], unread: 0 }
+
+  const { count } = await admin
+    .from('messages')
+    .select('*', { count: 'exact', head: true })
+    .in('conversation_id', convIds)
+    .neq('sender_id', user.id)
+    .eq('is_read', false)
+
+  return { convIds, unread: count ?? 0 }
 }
 
 export async function markConversationRead(conversationId: string) {
