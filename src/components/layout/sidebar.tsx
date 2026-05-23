@@ -31,27 +31,40 @@ const adminNavItem = { href: '/admin', label: 'Admin', icon: ShieldCheck }
 export function Sidebar({ spaces, profile, communityName = 'Community', className }: SidebarProps) {
   const pathname = usePathname()
 
+  function isActive(href: string) {
+    if (href === '/') return pathname === '/'
+    return pathname === href || pathname.startsWith(href + '/')
+  }
+
   return (
-    <aside className={cn('w-64 border-r flex flex-col shrink-0', className)}>
+    <aside className={cn('w-64 border-r flex flex-col shrink-0 bg-muted/30', className)}>
       {/* Logo */}
       <div className="h-14 flex items-center px-4 border-b shrink-0">
-        <Link href="/" className="font-bold text-lg">{communityName}</Link>
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm shrink-0">
+            <span className="text-primary-foreground text-xs font-bold">C</span>
+          </div>
+          <span className="font-semibold text-base tracking-tight">{communityName}</span>
+        </Link>
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="p-3 space-y-1">
+        <div className="p-2.5 space-y-0.5">
           {/* Main nav */}
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href}>
-              <Button
-                variant={pathname === href || pathname.startsWith(href + '/') && href !== '/' ? 'secondary' : 'ghost'}
-                className="w-full justify-start gap-2"
-                size="sm"
+              <div
+                className={cn(
+                  'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer',
+                  isActive(href)
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
               >
-                <Icon className="h-4 w-4" />
-                <span className="flex-1 text-left">{label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="flex-1">{label}</span>
                 {href === '/messages' && <DmBadge />}
-              </Button>
+              </div>
             </Link>
           ))}
 
@@ -70,35 +83,42 @@ export function Sidebar({ spaces, profile, communityName = 'Community', classNam
           )}
 
           {/* Spaces */}
-          <div className="pt-3">
-            <div className="flex items-center justify-between px-2 mb-2">
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          <div className="pt-4">
+            <div className="flex items-center justify-between px-3 mb-1.5">
+              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
                 Spaces
               </span>
               <Link href="/spaces/new">
-                <Button variant="ghost" size="icon" className="h-5 w-5">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-muted"
+                >
                   <Plus className="h-3 w-3" />
                 </Button>
               </Link>
             </div>
 
             {spaces.length === 0 ? (
-              <p className="text-xs text-muted-foreground px-2 py-1">
+              <p className="text-xs text-muted-foreground px-3 py-1.5">
                 Chưa tham gia space nào
               </p>
             ) : (
               spaces.map((space) => (
                 <Link key={space.id} href={`/spaces/${space.slug}`}>
-                  <Button
-                    variant={pathname === `/spaces/${space.slug}` ? 'secondary' : 'ghost'}
-                    className="w-full justify-start gap-2"
-                    size="sm"
+                  <div
+                    className={cn(
+                      'flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer',
+                      pathname === `/spaces/${space.slug}`
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                    )}
                   >
-                    <span className="text-base leading-none">
+                    <span className="text-base leading-none w-5 text-center shrink-0">
                       {space.icon ?? space.name.charAt(0).toUpperCase()}
                     </span>
                     <span className="truncate">{space.name}</span>
-                  </Button>
+                  </div>
                 </Link>
               ))
             )}
@@ -110,20 +130,29 @@ export function Sidebar({ spaces, profile, communityName = 'Community', classNam
       {profile ? (
         <div className="border-t p-3 shrink-0">
           <div className="flex items-center gap-2">
-            <Link href={`/profile/${profile.username}`} className="flex items-center gap-2 flex-1 min-w-0 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
-              <Avatar className="h-7 w-7 shrink-0">
+            <Link
+              href={`/profile/${profile.username}`}
+              className="flex items-center gap-2.5 flex-1 min-w-0 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors"
+            >
+              <Avatar className="h-7 w-7 shrink-0 ring-2 ring-background shadow-sm">
                 <AvatarImage src={profile.avatar_url ?? undefined} />
-                <AvatarFallback className="text-xs">
+                <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                   {(profile.display_name ?? profile.username).charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-medium truncate">{profile.display_name ?? profile.username}</p>
-                <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
+                <p className="text-sm font-medium truncate leading-tight">
+                  {profile.display_name ?? profile.username}
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>
               </div>
             </Link>
-            <Link href="/settings/profile" className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0" title="Cài đặt hồ sơ">
-              <Settings className="h-4 w-4" />
+            <Link
+              href="/settings/profile"
+              className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0"
+              title="Cài đặt hồ sơ"
+            >
+              <Settings className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
