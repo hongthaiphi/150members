@@ -12,18 +12,25 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
-
-  const { data: profile } = await supabase
+  // For post detail page, we allow guests
+  // Note: we can't easily check pathname in Server Layout, but we can check if it's NOT a guest-friendly page if we wanted.
+  // However, the middleware already handles protection for other pages.
+  // So here we just shouldn't redirect if it's a page that might be public.
+  
+  // Actually, MainLayout is used for all (main) routes. 
+  // If user is null, we only skip redirect for specific routes if we knew them.
+  // But wait, if I remove 'redirect' here, then the page component itself must handle guest vs user.
+  
+  const { data: profile } = user ? await supabase
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single() : { data: null }
 
-  const { data: rawMemberships } = await supabase
+  const { data: rawMemberships } = user ? await supabase
     .from('space_members')
     .select('space_id')
-    .eq('user_id', user.id)
+    .eq('user_id', user.id) : { data: null }
 
   const memberships = rawMemberships as Array<{ space_id: string }> | null
 

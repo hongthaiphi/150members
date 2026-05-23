@@ -21,6 +21,7 @@ interface PostActionsProps {
   isPinned: boolean
   initialLikeCount: number
   initialLiked: boolean
+  isGuest?: boolean
 }
 
 export function PostActions({
@@ -31,12 +32,17 @@ export function PostActions({
   isPinned,
   initialLikeCount,
   initialLiked,
+  isGuest = false,
 }: PostActionsProps) {
   const [likeCount, setLikeCount] = useState(initialLikeCount)
   const [liked, setLiked] = useState(initialLiked)
   const [pending, startTransition] = useTransition()
 
   function handleLike() {
+    if (isGuest) {
+      toast.error('Vui lòng đăng nhập để thực hiện tính năng này')
+      return
+    }
     startTransition(async () => {
       const res = await toggleReaction(postId, 'post', spaceSlug, postId)
       if (res?.error) { toast.error(res.error); return }
