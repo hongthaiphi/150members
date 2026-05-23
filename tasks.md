@@ -132,11 +132,11 @@
 
 ## 🟡 Phase 10 — Search
 
-- [ ] `SEARCH-01` Search bar toàn cục trong header
-- [ ] `SEARCH-02` Tìm kiếm bài viết theo từ khóa (Supabase full-text search)
-- [ ] `SEARCH-03` Tìm kiếm thành viên theo tên / username
-- [ ] `SEARCH-04` Tìm kiếm Space
-- [ ] `SEARCH-05` Lọc kết quả theo Space
+- [x] `SEARCH-01` Search bar toàn cục trong header
+- [x] `SEARCH-02` Tìm kiếm bài viết theo từ khóa (Supabase full-text search)
+- [x] `SEARCH-03` Tìm kiếm thành viên theo tên / username
+- [x] `SEARCH-04` Tìm kiếm Space
+- [x] `SEARCH-05` Lọc kết quả theo Space
 
 ---
 
@@ -186,8 +186,8 @@
 | Comments      | 7       | 7/7        | 🔴 MVP   |
 | Notifications | 5       | 4/5        | 🔴 MVP   |
 | DM            | 6       | 6/6        | 🟡 V2    |
-| Search        | 5       | 0/5        | 🟡 V2    |
+| Search        | 5       | 5/5        | 🟡 V2    |
 | Email         | 4       | 0/4        | 🟡 V2    |
 | Admin         | 7       | 0/7        | 🟢 V3    |
 | Polish        | 7       | 0/7        | 🟢 V3    |
-| **Tổng**      | **98**  | **71/98**  |          |
+| **Tổng**      | **98**  | **76/98**  |          |
