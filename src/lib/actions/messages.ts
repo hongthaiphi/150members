@@ -10,76 +10,88 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   if (!user) return null
   if (user.id === otherUserId) return null
 
+  // Admin client bypass toàn bộ RLS — tránh lỗi recursive policy trên
+  // conversation_participants (migration 007) và không phụ thuộc vào
+  // bất kỳ phiên bản migration nào.
+  const admin = createAdminClient()
+
   try {
-    // ── Step 1: Tìm conversation đã có qua conversation_participants ──────────
-    // Dùng regular client (user có quyền SELECT cho các conversation của họ).
-    // Không phụ thuộc unique_key hay RLS policy nào đặc biệt.
-    const { data: myRows } = await supabase
+    // ── Step 1: Tìm conversation đã có qua admin client ───────────────────────
+    const { data: myRows, error: e1 } = await admin
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', user.id)
 
+    if (e1) console.error('[getOrCreateConversation] step1 error:', e1.message)
+
     if (myRows && myRows.length > 0) {
-      const myIds = myRows.map(r => r.conversation_id)
-      const { data: shared } = await supabase
+      const myIds = (myRows as { conversation_id: string }[]).map(r => r.conversation_id)
+      const { data: shared, error: e2 } = await admin
         .from('conversation_participants')
         .select('conversation_id')
         .eq('user_id', otherUserId)
         .in('conversation_id', myIds)
         .maybeSingle()
-      if (shared) return shared.conversation_id
+
+      if (e2) console.error('[getOrCreateConversation] step2 error:', e2.message)
+      if (shared) return (shared as { conversation_id: string }).conversation_id
     }
 
-    // ── Step 2: Tạo conversation mới qua admin client ─────────────────────────
-    // Admin client (service_role) bypass toàn bộ RLS nên hoạt động với mọi
-    // phiên bản migration (002, 007...).
-    const admin = createAdminClient()
+    // ── Step 2: Tạo conversation mới ─────────────────────────────────────────
+    const uniqueKey = [user.id, otherUserId].sort().join(':')
+    let convId: string | null = null
+
+    // Dùng `any` vì kiểu Database chưa phản ánh cột unique_key (migration 005)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const convTable = (admin as unknown as any).from('conversations')
-    const uniqueKey = [user.id, otherUserId].sort().join(':')
 
-    // Tìm lại theo unique_key (phòng race condition giữa step 1 và 2)
-    const { data: existingByKey } = await convTable
-      .select('id')
-      .eq('unique_key', uniqueKey)
-      .maybeSingle()
-
-    if (existingByKey) return (existingByKey as { id: string }).id
-
-    // Tạo conversation
+    // Thử insert với unique_key (migration 005+)
     const { data: conv, error: insertErr } = await convTable
       .insert({ unique_key: uniqueKey })
       .select('id')
       .single()
 
     if (insertErr) {
-      // Race condition: conversation vừa được tạo bởi request khác
       if (insertErr.code === '23505') {
-        const { data: retry } = await convTable
+        // Race condition: tìm lại theo unique_key
+        const { data: existing } = await convTable
           .select('id')
           .eq('unique_key', uniqueKey)
           .maybeSingle()
-        if (!retry) return null
-        // Đảm bảo participants tồn tại
-        await admin.from('conversation_participants').insert([
-          { conversation_id: (retry as { id: string }).id, user_id: user.id },
-          { conversation_id: (retry as { id: string }).id, user_id: otherUserId },
-        ]).then(() => {})
-        return (retry as { id: string }).id
+        convId = existing ? (existing as { id: string }).id : null
+      } else {
+        // unique_key column chưa tồn tại → insert không có unique_key
+        console.warn('[getOrCreateConversation] unique_key failed, fallback:', insertErr.message)
+        const { data: conv2, error: err2 } = await admin
+          .from('conversations')
+          .insert({})
+          .select('id')
+          .single()
+        if (err2) {
+          console.error('[getOrCreateConversation] fallback insert error:', err2.message)
+          return null
+        }
+        convId = conv2 ? (conv2 as { id: string }).id : null
       }
-      console.error('[getOrCreateConversation] insert error:', insertErr.message)
-      return null
+    } else {
+      convId = conv ? (conv as { id: string }).id : null
     }
 
-    if (!conv) return null
+    if (!convId) return null
 
-    // Thêm cả 2 participants qua admin client
-    await admin.from('conversation_participants').insert([
-      { conversation_id: (conv as { id: string }).id, user_id: user.id },
-      { conversation_id: (conv as { id: string }).id, user_id: otherUserId },
-    ])
+    // Thêm cả 2 participants
+    const { error: partErr } = await admin
+      .from('conversation_participants')
+      .insert([
+        { conversation_id: convId, user_id: user.id },
+        { conversation_id: convId, user_id: otherUserId },
+      ])
 
-    return (conv as { id: string }).id
+    if (partErr && partErr.code !== '23505') {
+      console.error('[getOrCreateConversation] participants error:', partErr.message)
+    }
+
+    return convId
   } catch (err) {
     console.error('[getOrCreateConversation] unexpected error:', err)
     return null
