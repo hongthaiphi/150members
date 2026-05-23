@@ -1,6 +1,13 @@
--- H-3: Fix spaces bucket — UPDATE/DELETE must check path ownership, not just auth role
+-- H-3: Fix spaces bucket — INSERT/UPDATE/DELETE must check path ownership, not just auth role
+DROP POLICY IF EXISTS "Authenticated users can upload space images" ON storage.objects;
 DROP POLICY IF EXISTS "Users can update space images" ON storage.objects;
 DROP POLICY IF EXISTS "Users can delete space images" ON storage.objects;
+
+CREATE POLICY "Users can upload to their own space folder" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'spaces' AND
+    auth.uid()::text = (storage.foldername(name))[1]
+  );
 
 CREATE POLICY "Owners can update space images" ON storage.objects
   FOR UPDATE USING (
