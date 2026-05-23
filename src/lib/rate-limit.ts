@@ -24,11 +24,7 @@ export interface RateLimitResult {
   resetAt: number
 }
 
-export async function checkRateLimit(
-  key: string,
-  // options kept for API compatibility but Upstash limiter uses fixed config above
-  _options?: { limit?: number; windowMs?: number }
-): Promise<RateLimitResult> {
+export async function checkRateLimit(key: string): Promise<RateLimitResult> {
   const limiter = getUploadRateLimiter()
   const { success, remaining, reset } = await limiter.limit(key)
   return { success, remaining, resetAt: reset }
