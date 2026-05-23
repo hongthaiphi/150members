@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PostActions } from '@/components/posts/post-actions'
 import { RichTextEditor } from '@/components/posts/rich-text-editor'
@@ -196,6 +197,7 @@ export default async function PostDetailPage({ params }: Props) {
               isPinned={post.is_pinned}
               initialLikeCount={countReactions(post.id)}
               initialLiked={userLiked(post.id)}
+              isGuest={!user}
             />
           </div>
         </div>
@@ -216,7 +218,21 @@ export default async function PostDetailPage({ params }: Props) {
         />
       )}
 
-      {!isMember && space.is_private && (
+      {!user && !space.is_private && (
+        <div className="mt-8 p-6 bg-muted/50 rounded-xl text-center">
+          <p className="text-muted-foreground mb-4">Bạn cần đăng nhập để tham gia thảo luận</p>
+          <div className="flex items-center justify-center gap-3">
+            <Link href="/login">
+              <Button variant="outline">Đăng nhập</Button>
+            </Link>
+            <Link href="/register">
+              <Button>Đăng ký tài khoản</Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {user && !isMember && space.is_private && (
         <p className="text-muted-foreground text-sm">
           Tham gia Space để bình luận.{' '}
           <Link href={`/spaces/${space.slug}`} className="text-primary hover:underline">

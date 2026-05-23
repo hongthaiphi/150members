@@ -31,7 +31,11 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const pathname = request.nextUrl.pathname
-  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r))
+  
+  // Publicly accessible post detail path pattern: /spaces/[slug]/posts/[id]
+  const isPublicPostDetail = /^\/spaces\/[^/]+\/posts\/[^/]+$/.test(pathname)
+  
+  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r)) && !isPublicPostDetail
   const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r))
 
   function redirectWithCookies(url: URL) {

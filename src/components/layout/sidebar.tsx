@@ -88,7 +88,7 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
       </ScrollArea>
 
       {/* User profile at bottom */}
-      {profile && (
+      {profile ? (
         <div className="border-t p-3 shrink-0">
           <div className="flex items-center gap-2">
             <Link href={`/profile/${profile.username}`} className="flex items-center gap-2 flex-1 min-w-0 rounded-lg px-2 py-1.5 hover:bg-muted transition-colors">
@@ -105,6 +105,20 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
             </Link>
             <Link href="/settings/profile" className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground shrink-0" title="Cài đặt hồ sơ">
               <Settings className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <div className="border-t p-4 shrink-0">
+          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+            Đăng nhập để tham gia thảo luận và theo dõi các Space.
+          </p>
+          <div className="grid gap-2">
+            <Link href="/login">
+              <Button variant="outline" size="sm" className="w-full">Đăng nhập</Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm" className="w-full">Tham gia ngay</Button>
             </Link>
           </div>
         </div>

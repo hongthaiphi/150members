@@ -93,6 +93,7 @@
 - [x] `POST-08` Like / reaction bài viết
 - [x] `POST-09` Copy link chia sẻ bài viết
 - [x] `POST-10` Infinite scroll hoặc pagination feed
+- [ ] `POST-11` Cho phép share một bài bất kì cho người không cần đăng nhập có thể đọc
 
 ---
 

@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { Input } from '@/components/ui/input'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { UserMenu } from '@/components/layout/user-menu'
 import type { Database } from '@/types/database'
@@ -40,8 +42,21 @@ export function Header({ profile }: HeaderProps) {
       </form>
 
       <div className="flex items-center gap-2 ml-auto">
-        <NotificationBell />
-        {profile && <UserMenu profile={profile} />}
+        {profile ? (
+          <>
+            <NotificationBell />
+            <UserMenu profile={profile} />
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Link href="/login">
+              <Button variant="ghost" size="sm">Đăng nhập</Button>
+            </Link>
+            <Link href="/register">
+              <Button size="sm">Tham gia</Button>
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   )
