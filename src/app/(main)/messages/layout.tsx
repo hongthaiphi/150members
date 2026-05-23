@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { ConversationList } from '@/components/messages/conversation-list'
 import { NewConversationDialog } from '@/components/messages/new-conversation-dialog'
 import { MessagesContainer } from '@/components/messages/messages-container'
@@ -28,7 +29,11 @@ export default async function MessagesLayout({ children }: { children: React.Rea
   let conversations: ConversationItem[] = []
 
   if (user) {
-    const { data: myParticipations } = await supabase
+    // Admin client bypass RLS — tránh lỗi recursive policy (42P17). Mọi truy vấn
+    // dưới đây đều bị giới hạn theo convIds của chính user nên vẫn an toàn.
+    const admin = createAdminClient()
+
+    const { data: myParticipations } = await admin
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', user.id)
@@ -37,23 +42,23 @@ export default async function MessagesLayout({ children }: { children: React.Rea
 
     if (convIds.length > 0) {
       const [convsResult, othersResult, msgsResult, unreadResult] = await Promise.all([
-        supabase
+        admin
           .from('conversations')
           .select('id, updated_at')
           .in('id', convIds)
           .order('updated_at', { ascending: false }),
-        supabase
+        admin
           .from('conversation_participants')
           .select('conversation_id, profiles(id, username, display_name, avatar_url)')
           .in('conversation_id', convIds)
           .neq('user_id', user.id),
-        supabase
+        admin
           .from('messages')
           .select('conversation_id, content, created_at, sender_id')
           .in('conversation_id', convIds)
           .order('created_at', { ascending: false })
           .limit(convIds.length * 3),
-        supabase
+        admin
           .from('messages')
           .select('conversation_id')
           .in('conversation_id', convIds)
