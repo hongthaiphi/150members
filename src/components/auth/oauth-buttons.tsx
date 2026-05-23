@@ -14,7 +14,7 @@ export function OAuthButtons({ redirectTo }: OAuthButtonsProps) {
     await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo.startsWith('/') && !redirectTo.startsWith('//') ? redirectTo : '/')}`,
       },
     })
   }

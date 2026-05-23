@@ -84,7 +84,14 @@ export async function updateSpace(
 
   const { data: space, error } = await supabase
     .from('spaces')
-    .update({ ...data, updated_at: new Date().toISOString() })
+    .update({
+      name: data.name,
+      description: data.description,
+      is_private: data.is_private,
+      icon: data.icon,
+      cover_image: data.cover_image,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', spaceId)
     .select('slug')
     .single()
@@ -121,6 +128,9 @@ export async function joinSpace(spaceId: string, slug: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
+
+  const { data: space } = await supabase.from('spaces').select('is_private').eq('id', spaceId).single()
+  if (space?.is_private) return { error: 'Không thể tự tham gia space riêng tư' }
 
   const { error } = await supabase
     .from('space_members')

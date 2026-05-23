@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -29,11 +29,24 @@ export default async function SpaceMembersPage({ params }: Props) {
 
   const { data: space } = await supabase
     .from('spaces')
-    .select('id, name, slug')
+    .select('id, name, slug, is_private')
     .eq('slug', params.slug)
     .single()
 
   if (!space) notFound()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  if (space.is_private) {
+    const { data: membership } = await supabase
+      .from('space_members')
+      .select('user_id')
+      .eq('space_id', space.id)
+      .eq('user_id', user.id)
+      .single()
+    if (!membership) notFound()
+  }
 
   const { data: rawMembers } = await supabase
     .from('space_members')

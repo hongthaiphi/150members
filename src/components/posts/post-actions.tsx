@@ -40,8 +40,11 @@ export function PostActions({
     startTransition(async () => {
       const res = await toggleReaction(postId, 'post', spaceSlug, postId)
       if (res?.error) { toast.error(res.error); return }
-      setLiked(!liked)
-      setLikeCount(c => liked ? c - 1 : c + 1)
+      setLiked(prev => {
+        const nowLiked = !prev
+        setLikeCount(c => nowLiked ? c + 1 : c - 1)
+        return nowLiked
+      })
     })
   }
 
@@ -55,7 +58,7 @@ export function PostActions({
 
   function handlePin() {
     startTransition(async () => {
-      const res = await togglePin(postId, spaceSlug, isPinned)
+      const res = await togglePin(postId, spaceSlug)
       if (res?.error) toast.error(res.error)
       else toast.success(isPinned ? 'Đã bỏ ghim' : 'Đã ghim bài viết')
     })

@@ -51,7 +51,8 @@ export function EditSpaceForm({ space }: { space: Space }) {
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       const json = await res.json() as { url?: string; error?: string }
       if (!res.ok || json.error) throw new Error(json.error)
-      await updateSpace(space.id, { cover_image: json.url })
+      const result = await updateSpace(space.id, { cover_image: json.url })
+      if (result?.error) throw new Error(result.error)
       setCoverUrl(json.url!)
       toast.success('Cập nhật ảnh bìa thành công')
     } catch (err) {

@@ -39,8 +39,8 @@ export default function LoginPage() {
       setError('Email hoặc mật khẩu không đúng')
       return
     }
-    router.push(redirectTo)
     router.refresh()
+    router.push(redirectTo)
   }
 
   return (

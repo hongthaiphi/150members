@@ -87,7 +87,12 @@ export function RichTextEditor({ content, onChange, placeholder, className, edit
 
   function setLink() {
     const url = window.prompt('Nhập URL:')
-    if (url) editor?.chain().focus().setLink({ href: url }).run()
+    if (!url) return
+    if (!/^https?:\/\/|^mailto:/i.test(url)) {
+      toast.error('Chỉ hỗ trợ URL bắt đầu bằng http://, https:// hoặc mailto:')
+      return
+    }
+    editor?.chain().focus().setLink({ href: url }).run()
   }
 
   if (!editor) return null

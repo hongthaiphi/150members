@@ -22,11 +22,15 @@ export function ConversationList({ initialConversations, currentUserId }: Conver
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   useEffect(() => {
+    const convIds = conversations.map(c => c.id)
+    const filter = convIds.length > 0
+      ? `conversation_id=in.(${convIds.join(',')})`
+      : 'conversation_id=eq.00000000-0000-0000-0000-000000000000'
     const channel = supabase
       .channel('conversation-list')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+        { event: 'INSERT', schema: 'public', table: 'messages', filter },
         (payload) => {
           const msg = payload.new as {
             conversation_id: string

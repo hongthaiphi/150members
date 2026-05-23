@@ -39,7 +39,7 @@ export function MessageThread({ conversationId, initialMessages, currentUserId, 
 
   // Mark as read on mount and when conversation changes
   useEffect(() => {
-    markConversationRead(conversationId)
+    markConversationRead(conversationId).catch(console.error)
   }, [conversationId])
 
   // Subscribe to realtime messages
@@ -63,7 +63,7 @@ export function MessageThread({ conversationId, initialMessages, currentUserId, 
             return [...prev, newMsg]
           })
           if (newMsg.sender_id !== currentUserId) {
-            markConversationRead(conversationId)
+            markConversationRead(conversationId).catch(console.error)
           }
         }
       )

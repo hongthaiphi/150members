@@ -18,6 +18,31 @@ export async function createComment(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Chưa đăng nhập' }
 
+  // Verify user is a member of the space containing this post
+  const { data: postForCheck } = await supabase
+    .from('posts')
+    .select('space_id')
+    .eq('id', postId)
+    .single()
+
+  if (postForCheck) {
+    const { data: spaceForCheck } = await supabase
+      .from('spaces')
+      .select('is_private')
+      .eq('id', postForCheck.space_id)
+      .single()
+
+    if (spaceForCheck?.is_private) {
+      const { data: membership } = await supabase
+        .from('space_members')
+        .select('user_id')
+        .eq('space_id', postForCheck.space_id)
+        .eq('user_id', user.id)
+        .single()
+      if (!membership) return { error: 'Bạn chưa tham gia Space này' }
+    }
+  }
+
   const { data: comment, error } = await supabase
     .from('comments')
     .insert({

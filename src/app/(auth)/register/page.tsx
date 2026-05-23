@@ -14,7 +14,7 @@ import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 const registerSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
-  password: z.string().min(8, 'Mật khẩu tối thiểu 8 ký tự'),
+  password: z.string().min(8, 'Mật khẩu tối thiểu 8 ký tự').regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, 'Mật khẩu phải có chữ hoa, chữ thường và số'),
   confirmPassword: z.string(),
 }).refine(d => d.password === d.confirmPassword, {
   message: 'Mật khẩu xác nhận không khớp',
@@ -34,13 +34,19 @@ export default function RegisterPage() {
 
   async function onSubmit(data: RegisterForm) {
     setError(null)
-    const { error } = await supabase.auth.signUp({
+    const { data: signUpData, error } = await supabase.auth.signUp({
       email: data.email,
       password: data.password,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
     })
     if (error) {
-      setError(error.message)
+      setError('Đăng ký thất bại. Vui lòng thử lại.')
+      return
+    }
+    // email already registered: signUp returns no error but user/session are null
+    if (!signUpData.user && !signUpData.session) {
+      // Show same success message to avoid email enumeration
+      setSuccess(true)
       return
     }
     setSuccess(true)

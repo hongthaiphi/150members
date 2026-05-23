@@ -49,7 +49,8 @@ export default async function MessagesLayout({ children }: { children: React.Rea
           .from('messages')
           .select('conversation_id, content, created_at, sender_id')
           .in('conversation_id', convIds)
-          .order('created_at', { ascending: false }),
+          .order('created_at', { ascending: false })
+          .limit(convIds.length * 3),
         supabase
           .from('messages')
           .select('conversation_id')

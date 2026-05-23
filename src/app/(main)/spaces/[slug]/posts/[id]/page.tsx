@@ -109,6 +109,10 @@ export default async function PostDetailPage({ params }: Props) {
   const isCreator = user?.id === space.created_by
   const canManage = isCreator || userRole === 'admin' || userRole === 'moderator'
 
+  if (space.is_private && !isMember && !canManage) {
+    notFound()
+  }
+
   // Build CommentData with nested replies
   const commentData: CommentData[] = comments.map(c => ({
     id: c.id,

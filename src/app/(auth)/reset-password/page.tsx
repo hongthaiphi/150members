@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -23,7 +23,20 @@ type Form = z.infer<typeof schema>
 export default function ResetPasswordPage() {
   const router = useRouter()
   const [error, setError] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
   const supabase = createClient()
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setReady(true)
+      } else {
+        router.push('/forgot-password')
+      }
+    })
+    return () => subscription.unsubscribe()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Form>({
     resolver: zodResolver(schema),
@@ -33,7 +46,16 @@ export default function ResetPasswordPage() {
     setError(null)
     const { error } = await supabase.auth.updateUser({ password: data.password })
     if (error) { setError(error.message); return }
+    await supabase.auth.signOut()
     router.push('/login')
+  }
+
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <p className="text-muted-foreground text-sm">Đang xác thực...</p>
+      </div>
+    )
   }
 
   return (
