@@ -18,9 +18,15 @@ interface Props { params: { slug: string; id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
-  const { data } = await supabase.from('posts').select('title, content').eq('id', params.id).single()
+  const { data } = await supabase
+    .from('posts')
+    .select('title, content')
+    .eq('id', params.id)
+    .single()
+  
   const post = data as { title: string; content: string } | null
   if (!post) return { title: 'Bài viết không tồn tại' }
+  
   return {
     title: `${post.title} — Community`,
     description: post.content.replace(/<[^>]+>/g, '').slice(0, 160),
@@ -53,23 +59,21 @@ export default async function PostDetailPage({ params }: Props) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: space } = await supabase
-    .from('spaces')
-    .select('id, name, slug, is_private, created_by')
-    .eq('slug', params.slug)
-    .single()
-
-  if (!space) notFound()
-
   const { data: rawPost } = await supabase
     .from('posts')
-    .select('id, title, content, created_at, updated_at, is_pinned, author_id, space_id, profiles!author_id(id, username, display_name, avatar_url)')
+    .select(`
+      id, title, content, created_at, updated_at, is_pinned, author_id, space_id,
+      spaces!inner(id, name, slug, is_private, created_by),
+      profiles!author_id(id, username, display_name, avatar_url)
+    `)
     .eq('id', params.id)
-    .eq('space_id', space.id)
     .single()
 
-  const post = rawPost as unknown as PostRow | null
+  const post = rawPost as unknown as (PostRow & { spaces: { id: string; name: string; slug: string; is_private: boolean; created_by: string } }) | null
+  
   if (!post) notFound()
+  
+  const space = post.spaces
 
   // Fetch comments + reactions + profile data
   const [{ data: rawComments }, membershipResult, profileResult] = await Promise.all([
@@ -109,10 +113,6 @@ export default async function PostDetailPage({ params }: Props) {
   const isAuthor = user?.id === post.author_id
   const isCreator = user?.id === space.created_by
   const canManage = isCreator || userRole === 'admin' || userRole === 'moderator'
-
-  if (space.is_private && !isMember && !canManage) {
-    notFound()
-  }
 
   // Build CommentData with nested replies
   const commentData: CommentData[] = comments.map(c => ({
