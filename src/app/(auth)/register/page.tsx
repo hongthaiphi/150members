@@ -77,14 +77,6 @@ export default function RegisterPage() {
           <p className="text-muted-foreground text-sm">Tham gia cộng đồng ngay hôm nay</p>
         </div>
 
-        <OAuthButtons redirectTo="/" />
-
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">hoặc</span>
-          <Separator className="flex-1" />
-        </div>
-
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>

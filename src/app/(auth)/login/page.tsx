@@ -51,14 +51,6 @@ export default function LoginPage() {
           <p className="text-muted-foreground text-sm">Chào mừng trở lại</p>
         </div>
 
-        <OAuthButtons redirectTo={redirectTo} />
-
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">hoặc</span>
-          <Separator className="flex-1" />
-        </div>
-
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
