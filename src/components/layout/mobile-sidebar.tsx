@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import { Menu, Search } from 'lucide-react'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
@@ -20,6 +21,11 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ spaces, profile }: MobileSidebarProps) {
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname])
 
   return (
     <div className="md:hidden fixed top-0 left-0 z-40 h-14 flex items-center px-3 gap-2 border-b bg-background w-full">
