@@ -21,19 +21,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('posts')
-    .select('title, content')
+    .select('title, content, spaces!inner(name, slug)')
     .eq('id', params.id)
     .single()
 
-  const post = data as { title: string; content: string } | null
+  const post = data as { title: string; content: string; spaces: { name: string; slug: string } } | null
   if (!post) return { title: 'Bài viết không tồn tại' }
 
-  // Bug 4 fix: use proper HTML-to-text instead of naive regex that can leak tags
   const description = htmlToPlainText(post.content).slice(0, 160)
+  const url = `/spaces/${post.spaces.slug}/posts/${params.id}`
 
   return {
-    title: `${post.title} — Community`,
+    title: post.title,
     description,
+    openGraph: {
+      title: post.title,
+      description,
+      type: 'article',
+      url,
+    },
+    twitter: {
+      card: 'summary',
+      title: post.title,
+      description,
+    },
+    alternates: { canonical: url },
   }
 }
 

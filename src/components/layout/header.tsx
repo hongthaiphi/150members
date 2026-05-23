@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { NotificationBell } from '@/components/layout/notification-bell'
 import { UserMenu } from '@/components/layout/user-menu'
+import { ThemeToggle } from '@/components/layout/theme-toggle'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -46,14 +47,15 @@ export function Header({ profile }: HeaderProps) {
         </div>
       </form>
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-1 ml-auto">
+        <ThemeToggle />
         {profile ? (
           <>
             <NotificationBell />
             <UserMenu profile={profile} />
           </>
         ) : (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-1">
             <Link href="/login">
               <Button variant="ghost" size="sm">Đăng nhập</Button>
             </Link>

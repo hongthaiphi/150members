@@ -163,13 +163,13 @@
 
 ## 🟢 Phase 13 — Polish
 
-- [ ] `POLISH-01` Dark mode / Light mode toggle
-- [ ] `POLISH-02` SEO: metadata, Open Graph cho bài viết
-- [ ] `POLISH-03` Error boundary + trang 404 / 500
-- [ ] `POLISH-04` Rate limiting cho API routes
-- [ ] `POLISH-05` Kiểm tra RLS — security audit
-- [ ] `POLISH-06` Performance: image optimization, lazy loading
-- [ ] `POLISH-07` Viết README hướng dẫn deploy
+- [x] `POLISH-01` Dark mode / Light mode toggle
+- [x] `POLISH-02` SEO: metadata, Open Graph cho bài viết
+- [x] `POLISH-03` Error boundary + trang 404 / 500
+- [x] `POLISH-04` Rate limiting cho API routes
+- [x] `POLISH-05` Kiểm tra RLS — security audit
+- [x] `POLISH-06` Performance: image optimization, lazy loading
+- [x] `POLISH-07` Viết README hướng dẫn deploy
 
 ---
 
@@ -189,5 +189,5 @@
 | Search        | 5       | 5/5        | 🟡 V2    |
 | Email         | 4       | 0/4        | 🟡 V2    |
 | Admin         | 7       | 7/7        | 🟢 V3    |
-| Polish        | 7       | 0/7        | 🟢 V3    |
-| **Tổng**      | **98**  | **83/98**  |          |
+| Polish        | 7       | 7/7        | 🟢 V3    |
+| **Tổng**      | **98**  | **90/98**  |          |
