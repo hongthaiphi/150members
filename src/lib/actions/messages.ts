@@ -71,7 +71,7 @@ export async function sendMessage(conversationId: string, content: string) {
 
   const { data: member } = await supabase
     .from('conversation_participants')
-    .select('id')
+    .select('user_id')
     .eq('conversation_id', conversationId)
     .eq('user_id', user.id)
     .single()
