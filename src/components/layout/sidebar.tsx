@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Home, MessageSquare, Search, Plus, Settings } from 'lucide-react'
+import { DmBadge } from '@/components/messages/dm-badge'
 import type { Database } from '@/types/database'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
@@ -40,12 +41,13 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link key={href} href={href}>
               <Button
-                variant={pathname === href ? 'secondary' : 'ghost'}
+                variant={pathname === href || pathname.startsWith(href + '/') && href !== '/' ? 'secondary' : 'ghost'}
                 className="w-full justify-start gap-2"
                 size="sm"
               >
                 <Icon className="h-4 w-4" />
-                {label}
+                <span className="flex-1 text-left">{label}</span>
+                {href === '/messages' && <DmBadge />}
               </Button>
             </Link>
           ))}
