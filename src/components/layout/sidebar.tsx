@@ -44,7 +44,7 @@ export function Sidebar({ spaces, profile, communityName = 'Community', classNam
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center shadow-sm shrink-0">
             <span className="text-primary-foreground text-xs font-bold">C</span>
           </div>
-          <span className="font-semibold text-base tracking-tight">Community</span>
+          <span className="font-semibold text-base tracking-tight">{communityName}</span>
         </Link>
       </div>
 

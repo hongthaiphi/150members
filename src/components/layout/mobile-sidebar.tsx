@@ -43,7 +43,7 @@ export function MobileSidebar({ spaces, profile, communityName = 'Community' }: 
         <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center shadow-sm">
           <span className="text-primary-foreground text-[10px] font-bold">C</span>
         </div>
-        <span className="font-semibold text-sm">Community</span>
+        <span className="font-semibold text-sm">{communityName}</span>
       </Link>
 
       <div className="flex-1" />
