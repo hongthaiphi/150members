@@ -9,8 +9,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 const registerSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
