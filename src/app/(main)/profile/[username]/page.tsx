@@ -27,15 +27,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
   const { data } = await supabase
     .from('profiles')
-    .select('display_name, username, bio')
+    .select('display_name, username, bio, avatar_url')
     .eq('username', params.username)
     .single()
 
-  const p = data as { display_name: string | null; username: string; bio: string | null } | null
+  const p = data as { display_name: string | null; username: string; bio: string | null; avatar_url: string | null } | null
   if (!p) return { title: 'Profile không tồn tại' }
+  const name = p.display_name ?? p.username
+  const url = `/profile/${p.username}`
   return {
-    title: `${p.display_name ?? p.username} — Community`,
-    description: p.bio ?? undefined,
+    title: name,
+    description: p.bio ?? `Trang hồ sơ của ${name} trên Community`,
+    openGraph: {
+      title: name,
+      description: p.bio ?? `Trang hồ sơ của ${name} trên Community`,
+      url,
+      ...(p.avatar_url ? { images: [{ url: p.avatar_url }] } : {}),
+    },
+    alternates: { canonical: url },
   }
 }
 
