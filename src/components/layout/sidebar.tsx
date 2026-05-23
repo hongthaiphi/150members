@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Home, MessageSquare, Search, Plus, Settings } from 'lucide-react'
+import { Home, MessageSquare, Search, Plus, Settings, ShieldCheck } from 'lucide-react'
 import { DmBadge } from '@/components/messages/dm-badge'
 import type { Database } from '@/types/database'
 
@@ -24,6 +24,8 @@ const navItems = [
   { href: '/messages', label: 'Tin nhắn', icon: MessageSquare },
   { href: '/search', label: 'Tìm kiếm', icon: Search },
 ]
+
+const adminNavItem = { href: '/admin', label: 'Admin', icon: ShieldCheck }
 
 export function Sidebar({ spaces, profile, className }: SidebarProps) {
   const pathname = usePathname()
@@ -51,6 +53,20 @@ export function Sidebar({ spaces, profile, className }: SidebarProps) {
               </Button>
             </Link>
           ))}
+
+          {/* Admin link */}
+          {profile?.role === 'admin' && (
+            <Link href={adminNavItem.href}>
+              <Button
+                variant={pathname.startsWith('/admin') ? 'secondary' : 'ghost'}
+                className="w-full justify-start gap-2"
+                size="sm"
+              >
+                <adminNavItem.icon className="h-4 w-4" />
+                <span className="flex-1 text-left">{adminNavItem.label}</span>
+              </Button>
+            </Link>
+          )}
 
           {/* Spaces */}
           <div className="pt-3">
