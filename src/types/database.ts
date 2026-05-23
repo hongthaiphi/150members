@@ -3,6 +3,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRole = 'admin' | 'moderator' | 'member'
 export type ReactionTargetType = 'post' | 'comment'
 export type NotificationType = 'reply' | 'mention' | 'like' | 'new_post' | 'new_member'
+export type EmailDigestFrequency = 'none' | 'daily' | 'weekly'
 
 export interface Database {
   public: {
@@ -348,6 +349,39 @@ export interface Database {
           }
         ]
       }
+      email_preferences: {
+        Row: {
+          user_id: string
+          email_reply: boolean
+          email_mention: boolean
+          email_digest: EmailDigestFrequency
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          email_reply?: boolean
+          email_mention?: boolean
+          email_digest?: EmailDigestFrequency
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          email_reply?: boolean
+          email_mention?: boolean
+          email_digest?: EmailDigestFrequency
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>
@@ -355,6 +389,7 @@ export interface Database {
       user_role: UserRole
       reaction_target_type: ReactionTargetType
       notification_type: NotificationType
+      email_digest_frequency: EmailDigestFrequency
     }
   }
 }

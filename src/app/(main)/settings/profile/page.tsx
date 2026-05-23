@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Separator } from '@/components/ui/separator'
@@ -35,6 +36,21 @@ export default async function EditProfilePage() {
       <Separator className="my-6" />
 
       <EditProfileForm profile={profile} />
+
+      <Separator className="my-6" />
+
+      <div>
+        <h2 className="font-semibold mb-1">Thông báo email</h2>
+        <p className="text-sm text-muted-foreground mb-3">
+          Quản lý các loại email bạn nhận từ cộng đồng.
+        </p>
+        <Link
+          href="/settings/notifications"
+          className="text-sm underline underline-offset-4 hover:text-foreground text-muted-foreground"
+        >
+          Cài đặt thông báo email →
+        </Link>
+      </div>
     </div>
   )
 }

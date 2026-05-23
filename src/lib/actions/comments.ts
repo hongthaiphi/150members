@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import sanitizeHtml from 'sanitize-html'
+import { sendEmail } from '@/lib/email/client'
+import { replyEmailHtml, mentionEmailHtml } from '@/lib/email/templates'
 
 const COMMENT_MAX = 5_000
 
@@ -64,6 +66,58 @@ export async function createComment(
         post_title: (post as unknown as { title: string }).title,
       },
     })
+
+    // Fire-and-forget email if the recipient has email_reply enabled
+    sendEmailIfEnabled(supabase, post.author_id, async (email) => {
+      const { data: actor } = await supabase
+        .from('profiles')
+        .select('display_name, username')
+        .eq('id', user.id)
+        .single()
+      const actorName = actor?.display_name ?? actor?.username ?? 'Ai đó'
+      const postUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/spaces/${spaceSlug}/posts/${postId}`
+      await sendEmail({
+        to: email,
+        subject: `${actorName} ${parentId ? 'đã trả lời bình luận' : 'đã bình luận'} bài viết của bạn`,
+        html: replyEmailHtml({
+          actorName,
+          postTitle: (post as unknown as { title: string }).title,
+          postUrl,
+          isReply: !!parentId,
+        }),
+      })
+    }, 'email_reply')
+  }
+
+  // EMAIL-02: Send email to mentioned users (@username in content)
+  const mentionedUsernames = extractMentions(sanitized)
+  if (mentionedUsernames.length > 0) {
+    const { data: mentionedProfiles } = await supabase
+      .from('profiles')
+      .select('id, username')
+      .in('username', mentionedUsernames)
+
+    for (const mentioned of mentionedProfiles ?? []) {
+      if (mentioned.id === user.id) continue
+      sendEmailIfEnabled(supabase, mentioned.id, async (email) => {
+        const { data: actor } = await supabase
+          .from('profiles')
+          .select('display_name, username')
+          .eq('id', user.id)
+          .single()
+        const actorName = actor?.display_name ?? actor?.username ?? 'Ai đó'
+        const postUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/spaces/${spaceSlug}/posts/${postId}`
+        await sendEmail({
+          to: email,
+          subject: `${actorName} đã nhắc đến bạn`,
+          html: mentionEmailHtml({
+            actorName,
+            postTitle: (post as unknown as { title: string }).title ?? '',
+            postUrl,
+          }),
+        })
+      }, 'email_mention')
+    }
   }
 
   revalidatePath(`/spaces/${spaceSlug}/posts/${postId}`)
@@ -155,4 +209,29 @@ export async function toggleCommentReaction(commentId: string, postId: string, s
 
   revalidatePath(`/spaces/${spaceSlug}/posts/${postId}`)
   return { success: true, liked: !existing }
+}
+
+// Fetch user email + check their preference, then call cb (fire-and-forget)
+function sendEmailIfEnabled(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  cb: (email: string) => Promise<void>,
+  prefKey: 'email_reply' | 'email_mention'
+): void {
+  void (async () => {
+    const [{ data: authUser }, { data: pref }] = await Promise.all([
+      supabase.auth.admin.getUserById(userId).catch(() => ({ data: null })),
+      supabase.from('email_preferences').select('email_reply, email_mention').eq('user_id', userId).single(),
+    ])
+    const email = (authUser as { user?: { email?: string } } | null)?.user?.email
+    if (!email) return
+    const prefRow = pref as { email_reply: boolean; email_mention: boolean } | null
+    if (prefRow && prefRow[prefKey] === false) return
+    await cb(email)
+  })()
+}
+
+function extractMentions(text: string): string[] {
+  const matches = text.match(/@([a-zA-Z0-9_.-]+)/g) ?? []
+  return Array.from(new Set(matches.map(m => m.slice(1))))
 }

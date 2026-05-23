@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/email/digest?period=daily&secret=CRON_SECRET_PLACEHOLDER",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/email/digest?period=weekly&secret=CRON_SECRET_PLACEHOLDER",
+      "schedule": "0 8 * * 1"
+    }
+  ]
+}

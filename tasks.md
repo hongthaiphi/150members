@@ -142,10 +142,10 @@
 
 ## 🟡 Phase 11 — Email Notifications
 
-- [ ] `EMAIL-01` Cấu hình Resend hoặc Supabase SMTP
-- [ ] `EMAIL-02` Email thông báo reply / mention
-- [ ] `EMAIL-03` Email digest bài viết mới (hàng ngày / hàng tuần)
-- [ ] `EMAIL-04` Trang cài đặt bật/tắt từng loại email notification
+- [x] `EMAIL-01` Cấu hình Resend hoặc Supabase SMTP
+- [x] `EMAIL-02` Email thông báo reply / mention
+- [x] `EMAIL-03` Email digest bài viết mới (hàng ngày / hàng tuần)
+- [x] `EMAIL-04` Trang cài đặt bật/tắt từng loại email notification
 
 ---
 
@@ -187,7 +187,7 @@
 | Notifications | 5       | 4/5        | 🔴 MVP   |
 | DM            | 6       | 6/6        | 🟡 V2    |
 | Search        | 5       | 5/5        | 🟡 V2    |
-| Email         | 4       | 0/4        | 🟡 V2    |
+| Email         | 4       | 4/4        | 🟡 V2    |
 | Admin         | 7       | 0/7        | 🟢 V3    |
 | Polish        | 7       | 0/7        | 🟢 V3    |
 | **Tổng**      | **98**  | **76/98**  |          |
