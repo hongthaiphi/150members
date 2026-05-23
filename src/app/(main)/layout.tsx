@@ -43,10 +43,17 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     spaces = (spaceData ?? []) as SpaceItem[]
   }
 
+  const { data: settingsRows } = await supabase
+    .from('community_settings')
+    .select('key, value')
+    .eq('key', 'community_name')
+    .maybeSingle()
+  const communityName = (settingsRows as { key: string; value: string } | null)?.value || 'Community'
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar spaces={spaces} profile={profile} className="hidden md:flex" />
-      <MobileSidebar spaces={spaces} profile={profile} />
+      <Sidebar spaces={spaces} profile={profile} communityName={communityName} className="hidden md:flex" />
+      <MobileSidebar spaces={spaces} profile={profile} communityName={communityName} />
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden pt-14 md:pt-0">
         <Header profile={profile} />
         <main className="flex-1 overflow-y-auto">
