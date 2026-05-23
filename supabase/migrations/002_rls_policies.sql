@@ -33,11 +33,7 @@ CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (
 CREATE POLICY "Admins can update any profile" ON profiles FOR UPDATE USING (is_admin(auth.uid()));
 
 -- spaces
-CREATE POLICY "Anyone can view public spaces" ON spaces FOR SELECT USING (
-  NOT is_private
-  OR created_by = auth.uid()
-  OR EXISTS (SELECT 1 FROM space_members WHERE space_id = id AND user_id = auth.uid())
-);
+CREATE POLICY "Anyone can view spaces" ON spaces FOR SELECT USING (TRUE);
 CREATE POLICY "Members can create spaces" ON spaces FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 CREATE POLICY "Creator and admins can update space" ON spaces FOR UPDATE USING (
   created_by = auth.uid() OR is_admin_or_moderator(auth.uid())
@@ -52,13 +48,7 @@ CREATE POLICY "Users can join spaces" ON space_members FOR INSERT WITH CHECK (au
 CREATE POLICY "Users can leave spaces" ON space_members FOR DELETE USING (auth.uid() = user_id);
 
 -- posts
-CREATE POLICY "Members can view posts in spaces they belong to" ON posts FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM spaces s
-    LEFT JOIN space_members sm ON sm.space_id = s.id AND sm.user_id = auth.uid()
-    WHERE s.id = space_id AND (NOT s.is_private OR sm.user_id IS NOT NULL)
-  )
-);
+CREATE POLICY "Anyone can view posts" ON posts FOR SELECT USING (TRUE);
 CREATE POLICY "Space members can create posts" ON posts FOR INSERT WITH CHECK (
   auth.uid() = author_id AND
   EXISTS (SELECT 1 FROM space_members WHERE space_id = posts.space_id AND user_id = auth.uid())
@@ -71,14 +61,7 @@ CREATE POLICY "Author and admins can delete posts" ON posts FOR DELETE USING (
 );
 
 -- comments
-CREATE POLICY "Anyone who can see the post can see comments" ON comments FOR SELECT USING (
-  EXISTS (
-    SELECT 1 FROM posts p
-    JOIN spaces s ON s.id = p.space_id
-    LEFT JOIN space_members sm ON sm.space_id = s.id AND sm.user_id = auth.uid()
-    WHERE p.id = post_id AND (NOT s.is_private OR sm.user_id IS NOT NULL)
-  )
-);
+CREATE POLICY "Anyone can view comments" ON comments FOR SELECT USING (TRUE);
 CREATE POLICY "Authenticated users can comment" ON comments FOR INSERT WITH CHECK (auth.uid() = author_id);
 CREATE POLICY "Author and admins can update comments" ON comments FOR UPDATE USING (
   author_id = auth.uid() OR is_admin_or_moderator(auth.uid())
