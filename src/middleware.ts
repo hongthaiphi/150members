@@ -57,13 +57,21 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies(url)
   }
 
-  if (pathname.startsWith('/admin') && user) {
+  if (user && isProtected) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_banned')
       .eq('id', user.id)
       .single()
-    if (profile?.role !== 'admin') {
+
+    // is_banned requires migration 006 — guard with explicit true check
+    if (profile?.is_banned === true) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/banned'
+      return redirectWithCookies(url)
+    }
+
+    if (pathname.startsWith('/admin') && profile?.role !== 'admin') {
       const url = request.nextUrl.clone()
       url.pathname = '/'
       return redirectWithCookies(url)
