@@ -4,25 +4,34 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
-export async function getOrCreateConversation(otherUserId: string): Promise<string | null> {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-  if (user.id === otherUserId) return null
+export type GetOrCreateConversationResult = { id: string | null; error?: string }
 
-  // Admin client bypass toàn bộ RLS — tránh lỗi recursive policy trên
-  // conversation_participants (migration 007) và không phụ thuộc vào
-  // bất kỳ phiên bản migration nào.
-  const admin = createAdminClient()
-
+export async function getOrCreateConversation(otherUserId: string): Promise<GetOrCreateConversationResult> {
   try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { id: null, error: 'Chưa đăng nhập' }
+    if (user.id === otherUserId) return { id: null, error: 'Không thể tự nhắn tin với chính mình' }
+
+    // Admin client bypass toàn bộ RLS — tránh lỗi recursive policy trên
+    // conversation_participants (migration 007).
+    let admin: ReturnType<typeof createAdminClient>
+    try {
+      admin = createAdminClient()
+    } catch (e) {
+      return { id: null, error: 'admin-init: ' + (e as Error).message }
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return { id: null, error: 'Thiếu SUPABASE_SERVICE_ROLE_KEY trong môi trường runtime' }
+    }
+
     // ── Step 1: Tìm conversation đã có qua admin client ───────────────────────
     const { data: myRows, error: e1 } = await admin
       .from('conversation_participants')
       .select('conversation_id')
       .eq('user_id', user.id)
 
-    if (e1) console.error('[getOrCreateConversation] step1 error:', e1.message)
+    if (e1) return { id: null, error: 'step1: ' + e1.message }
 
     if (myRows && myRows.length > 0) {
       const myIds = (myRows as { conversation_id: string }[]).map(r => r.conversation_id)
@@ -33,8 +42,8 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
         .in('conversation_id', myIds)
         .maybeSingle()
 
-      if (e2) console.error('[getOrCreateConversation] step2 error:', e2.message)
-      if (shared) return (shared as { conversation_id: string }).conversation_id
+      if (e2) return { id: null, error: 'step2: ' + e2.message }
+      if (shared) return { id: (shared as { conversation_id: string }).conversation_id }
     }
 
     // ── Step 2: Tạo conversation mới ─────────────────────────────────────────
@@ -61,23 +70,19 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
         convId = existing ? (existing as { id: string }).id : null
       } else {
         // unique_key column chưa tồn tại → insert không có unique_key
-        console.warn('[getOrCreateConversation] unique_key failed, fallback:', insertErr.message)
         const { data: conv2, error: err2 } = await admin
           .from('conversations')
           .insert({})
           .select('id')
           .single()
-        if (err2) {
-          console.error('[getOrCreateConversation] fallback insert error:', err2.message)
-          return null
-        }
+        if (err2) return { id: null, error: 'create: ' + err2.message }
         convId = conv2 ? (conv2 as { id: string }).id : null
       }
     } else {
       convId = conv ? (conv as { id: string }).id : null
     }
 
-    if (!convId) return null
+    if (!convId) return { id: null, error: 'Không tạo được conversation (id rỗng)' }
 
     // Thêm cả 2 participants
     const { error: partErr } = await admin
@@ -88,13 +93,12 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
       ])
 
     if (partErr && partErr.code !== '23505') {
-      console.error('[getOrCreateConversation] participants error:', partErr.message)
+      return { id: null, error: 'participants: ' + partErr.message }
     }
 
-    return convId
+    return { id: convId }
   } catch (err) {
-    console.error('[getOrCreateConversation] unexpected error:', err)
-    return null
+    return { id: null, error: 'unexpected: ' + (err as Error).message }
   }
 }
 
