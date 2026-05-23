@@ -6,15 +6,15 @@ import { Redis } from '@upstash/redis'
 
 let uploadRateLimiter: Ratelimit | null = null
 
-function getUploadRateLimiter(): Ratelimit {
-  if (!uploadRateLimiter) {
-    const redis = Redis.fromEnv()
-    uploadRateLimiter = new Ratelimit({
-      redis,
-      limiter: Ratelimit.slidingWindow(20, '1 m'),
-      prefix: 'rl:upload',
-    })
-  }
+function getUploadRateLimiter(): Ratelimit | null {
+  if (uploadRateLimiter) return uploadRateLimiter
+  if (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN) return null
+  const redis = Redis.fromEnv()
+  uploadRateLimiter = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, '1 m'),
+    prefix: 'rl:upload',
+  })
   return uploadRateLimiter
 }
 
@@ -26,6 +26,8 @@ export interface RateLimitResult {
 
 export async function checkRateLimit(key: string): Promise<RateLimitResult> {
   const limiter = getUploadRateLimiter()
+  // Fallback: allow request if Upstash is not configured (e.g. local dev without env vars)
+  if (!limiter) return { success: true, remaining: 19, resetAt: Date.now() + 60_000 }
   const { success, remaining, reset } = await limiter.limit(key)
   return { success, remaining, resetAt: reset }
 }

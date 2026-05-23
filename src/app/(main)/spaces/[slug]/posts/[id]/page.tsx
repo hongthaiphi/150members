@@ -19,14 +19,25 @@ interface Props { params: { slug: string; id: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
   const { data } = await supabase
     .from('posts')
-    .select('title, content, spaces!inner(name, slug)')
+    .select('title, content, spaces!inner(id, name, slug, is_private)')
     .eq('id', params.id)
     .single()
 
-  const post = data as { title: string; content: string; spaces: { name: string; slug: string } } | null
+  const post = data as { title: string; content: string; spaces: { id: string; name: string; slug: string; is_private: boolean } } | null
   if (!post) return { title: 'Bài viết không tồn tại' }
+
+  // C-1: Do not expose title/description of private space posts to non-members
+  if (post.spaces.is_private) {
+    const { data: member } = user
+      ? await supabase.from('space_members').select('user_id')
+          .eq('space_id', post.spaces.id).eq('user_id', user.id).single()
+      : { data: null }
+    if (!member) return { title: 'Bài viết không tồn tại' }
+  }
 
   const description = htmlToPlainText(post.content).slice(0, 160)
   const url = `/spaces/${post.spaces.slug}/posts/${params.id}`
