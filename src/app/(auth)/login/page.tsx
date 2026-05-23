@@ -10,8 +10,6 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { OAuthButtons } from '@/components/auth/oauth-buttons'
 
 const loginSchema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -49,14 +47,6 @@ export default function LoginPage() {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Đăng nhập</h1>
           <p className="text-muted-foreground text-sm">Chào mừng trở lại</p>
-        </div>
-
-        <OAuthButtons redirectTo={redirectTo} />
-
-        <div className="flex items-center gap-3">
-          <Separator className="flex-1" />
-          <span className="text-xs text-muted-foreground">hoặc</span>
-          <Separator className="flex-1" />
         </div>
 
         <form onSubmit={(e) => { e.preventDefault(); void handleSubmit(onSubmit)(e) }} className="space-y-4">

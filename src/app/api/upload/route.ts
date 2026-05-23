@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
-const ALLOWED_BUCKETS = ['avatars', 'spaces'] as const
+const ALLOWED_BUCKETS = ['avatars', 'spaces', 'posts'] as const
 
 const EXT_MAP: Record<string, string> = {
   'image/jpeg': 'jpg',

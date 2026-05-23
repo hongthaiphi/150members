@@ -16,31 +16,42 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
     .single()
   if (!otherProfile) return null
 
-  const { data: myConvs } = await supabase
-    .from('conversation_participants')
-    .select('conversation_id')
-    .eq('user_id', user.id)
+  // Bug 1 fix: use atomic upsert via unique_key to prevent race condition duplicate conversations.
+  // unique_key = sorted pair of user IDs → same key regardless of who initiates first.
+  // Migration 005 adds the unique_key column + UNIQUE index to conversations table.
+  const uniqueKey = [user.id, otherUserId].sort().join(':')
 
-  const myConvIds = (myConvs ?? []).map(c => c.conversation_id)
+  // Bypass generated types (unique_key added by migration 005, types not regenerated yet)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const convTable = supabase.from('conversations') as unknown as any
 
-  if (myConvIds.length > 0) {
-    const { data: shared } = await supabase
-      .from('conversation_participants')
-      .select('conversation_id')
-      .eq('user_id', otherUserId)
-      .in('conversation_id', myConvIds)
-      .limit(1)
+  // Try to find existing conversation by unique_key first
+  const { data: existing } = await convTable
+    .select('id')
+    .eq('unique_key', uniqueKey)
+    .single()
 
-    if (shared && shared.length > 0) return shared[0].conversation_id
-  }
+  if (existing) return (existing as { id: string }).id
 
-  const { data: conv, error } = await supabase
-    .from('conversations')
-    .insert({})
+  // Insert with unique_key — if concurrent insert races us, ON CONFLICT returns error code 23505
+  const { data: conv, error } = await convTable
+    .insert({ unique_key: uniqueKey })
     .select('id')
     .single()
 
-  if (error || !conv) return null
+  if (error) {
+    // Conflict: another concurrent request already created it — fetch it
+    if (error.code === '23505') {
+      const { data: retry } = await convTable
+        .select('id')
+        .eq('unique_key', uniqueKey)
+        .single()
+      return (retry as { id: string } | null)?.id ?? null
+    }
+    return null
+  }
+
+  if (!conv) return null
 
   await supabase.from('conversation_participants').insert([
     { conversation_id: conv.id, user_id: user.id },

@@ -40,7 +40,44 @@ export function NotificationDropdown({ onClose, onCountChange }: NotificationDro
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20)
-      setNotifications(data ?? [])
+
+      const notifs = data ?? []
+
+      // Bug 6 fix: fetch fresh actor names (actor_id) instead of using stale snapshot (actor_name)
+      const actorIds = Array.from(
+        new Set(
+          notifs
+            .map(n => (n.data as Record<string, string | undefined>).actor_id)
+            .filter(Boolean) as string[]
+        )
+      )
+
+      if (actorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, display_name, username')
+          .in('id', actorIds)
+
+        const profileMap = new Map(
+          (profiles ?? []).map(p => [
+            p.id,
+            (p.display_name ?? p.username) as string,
+          ])
+        )
+
+        // Patch each notification with the fresh actor_name derived from actor_id
+        const patched = notifs.map(n => {
+          const d = n.data as Record<string, string | undefined>
+          if (d.actor_id && profileMap.has(d.actor_id)) {
+            return { ...n, data: { ...d, actor_name: profileMap.get(d.actor_id) } }
+          }
+          return n
+        })
+        setNotifications(patched)
+      } else {
+        setNotifications(notifs)
+      }
+
       setLoading(false)
     }
     load()
