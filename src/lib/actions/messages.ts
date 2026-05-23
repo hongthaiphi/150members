@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 export async function getOrCreateConversation(otherUserId: string): Promise<string | null> {
@@ -10,62 +9,21 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   if (!user) return null
   if (user.id === otherUserId) return null
 
-  const { data: otherProfile } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('id', otherUserId)
-    .single()
-  if (!otherProfile) return null
-
-  // Use admin client for conversation lookup/create to bypass RLS.
-  // The user-facing RLS now restricts SELECT on conversations to participants only,
-  // but we need to check unique_key before any participant row exists.
-  const admin = createAdminClient()
-
-  // Bug 1 fix: use atomic upsert via unique_key to prevent race condition duplicate conversations.
-  // unique_key = sorted pair of user IDs → same key regardless of who initiates first.
-  // Migration 005 adds the unique_key column + UNIQUE index to conversations table.
-  const uniqueKey = [user.id, otherUserId].sort().join(':')
-
-  // Bypass generated types (unique_key added by migration 005, types not regenerated yet)
+  // Use SECURITY DEFINER RPC (migration 011) instead of admin client.
+  // The RPC runs as DB superuser — handles conversation creation + both participants atomically.
+  // This avoids depending on SUPABASE_SERVICE_ROLE_KEY on the client side and fixes
+  // the "button stuck at Đang mở..." bug caused by unhandled admin client errors.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const convTable = (admin as unknown as any).from('conversations')
-
-  // Try to find existing conversation by unique_key first
-  const { data: existing } = await convTable
-    .select('id')
-    .eq('unique_key', uniqueKey)
-    .single()
-
-  if (existing) return (existing as { id: string }).id
-
-  // Insert with unique_key — if concurrent insert races us, ON CONFLICT returns error code 23505
-  const { data: conv, error } = await convTable
-    .insert({ unique_key: uniqueKey })
-    .select('id')
-    .single()
+  const { data, error } = await (supabase as unknown as any).rpc('get_or_create_dm', {
+    p_other_user_id: otherUserId,
+  })
 
   if (error) {
-    // Conflict: another concurrent request already created it — fetch it
-    if (error.code === '23505') {
-      const { data: retry } = await convTable
-        .select('id')
-        .eq('unique_key', uniqueKey)
-        .single()
-      return (retry as { id: string } | null)?.id ?? null
-    }
+    console.error('[getOrCreateConversation] RPC error:', error.message)
     return null
   }
 
-  if (!conv) return null
-
-  // Insert both participants via admin client (bypasses participant-only RLS on INSERT)
-  await admin.from('conversation_participants').insert([
-    { conversation_id: conv.id, user_id: user.id },
-    { conversation_id: conv.id, user_id: otherUserId },
-  ])
-
-  return conv.id
+  return (data as string) ?? null
 }
 
 export async function sendMessage(conversationId: string, content: string) {
