@@ -5,6 +5,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import { Markdown } from 'tiptap-markdown'
 import { cn } from '@/lib/utils'
 import {
   Bold, Italic, Strikethrough, Code, List, ListOrdered,
@@ -52,6 +53,11 @@ export function RichTextEditor({ content, onChange, placeholder, className, edit
       Placeholder.configure({ placeholder: placeholder ?? 'Viết nội dung...' }),
       Image.configure({ allowBase64: false }),
       Link.configure({ openOnClick: false }),
+      Markdown.configure({
+        html: true,
+        transformCopiedText: false,
+        transformPastedText: true,
+      }),
     ],
     content: content ?? '',
     editable,
@@ -101,37 +107,37 @@ export function RichTextEditor({ content, onChange, placeholder, className, edit
     <div className={cn('border rounded-lg overflow-hidden', className)}>
       {editable && (
         <div className="flex flex-wrap items-center gap-0.5 p-1.5 border-b bg-muted/30">
-          <ToolbarButton title="Đậm (Ctrl+B)" onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}>
+          <ToolbarButton title="Đậm (Ctrl+B) hoặc **text**" onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}>
             <Bold className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Nghiêng (Ctrl+I)" onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}>
+          <ToolbarButton title="Nghiêng (Ctrl+I) hoặc *text*" onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}>
             <Italic className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Gạch ngang" onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}>
+          <ToolbarButton title="Gạch ngang hoặc ~~text~~" onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}>
             <Strikethrough className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Code" onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')}>
+          <ToolbarButton title="Code hoặc `code`" onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')}>
             <Code className="h-3.5 w-3.5" />
           </ToolbarButton>
 
           <div className="w-px h-5 bg-border mx-0.5" />
 
-          <ToolbarButton title="Tiêu đề 2" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}>
+          <ToolbarButton title="Tiêu đề 2 hoặc ## " onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}>
             <Heading2 className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Tiêu đề 3" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })}>
+          <ToolbarButton title="Tiêu đề 3 hoặc ### " onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })}>
             <Heading3 className="h-3.5 w-3.5" />
           </ToolbarButton>
 
           <div className="w-px h-5 bg-border mx-0.5" />
 
-          <ToolbarButton title="Danh sách" onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>
+          <ToolbarButton title="Danh sách hoặc - " onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}>
             <List className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Danh sách số" onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}>
+          <ToolbarButton title="Danh sách số hoặc 1. " onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}>
             <ListOrdered className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Trích dẫn" onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}>
+          <ToolbarButton title="Trích dẫn hoặc > " onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}>
             <Quote className="h-3.5 w-3.5" />
           </ToolbarButton>
 
@@ -140,7 +146,7 @@ export function RichTextEditor({ content, onChange, placeholder, className, edit
           <ToolbarButton title="Chèn ảnh" onClick={insertImage}>
             <ImageIcon className="h-3.5 w-3.5" />
           </ToolbarButton>
-          <ToolbarButton title="Chèn link" onClick={setLink} active={editor.isActive('link')}>
+          <ToolbarButton title="Chèn link hoặc [text](url)" onClick={setLink} active={editor.isActive('link')}>
             <LinkIcon className="h-3.5 w-3.5" />
           </ToolbarButton>
 
