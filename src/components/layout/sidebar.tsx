@@ -16,6 +16,7 @@ type Space = { id: string; name: string; slug: string; icon: string | null }
 interface SidebarProps {
   spaces: Space[]
   profile: Profile | null
+  communityName?: string
   className?: string
 }
 
@@ -27,14 +28,14 @@ const navItems = [
 
 const adminNavItem = { href: '/admin', label: 'Admin', icon: ShieldCheck }
 
-export function Sidebar({ spaces, profile, className }: SidebarProps) {
+export function Sidebar({ spaces, profile, communityName = 'Community', className }: SidebarProps) {
   const pathname = usePathname()
 
   return (
     <aside className={cn('w-64 border-r flex flex-col shrink-0', className)}>
       {/* Logo */}
       <div className="h-14 flex items-center px-4 border-b shrink-0">
-        <Link href="/" className="font-bold text-lg">Community</Link>
+        <Link href="/" className="font-bold text-lg">{communityName}</Link>
       </div>
 
       <ScrollArea className="flex-1">
