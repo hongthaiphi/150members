@@ -39,18 +39,18 @@ export function NewConversationDialog() {
   async function handleSelect(userId: string) {
     setStartingId(userId)
     try {
-      const convId = await getOrCreateConversation(userId)
-      if (convId) {
+      const res = await getOrCreateConversation(userId)
+      if (res.id) {
         setOpen(false)
         setQuery('')
         setResults([])
-        router.push(`/messages/${convId}`)
+        router.push(`/messages/${res.id}`)
       } else {
-        toast.error('Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
+        toast.error(res.error || 'Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
       }
     } catch (err) {
       console.error('[NewConversationDialog]', err)
-      toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
+      toast.error('Đã xảy ra lỗi: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setStartingId(null)
     }

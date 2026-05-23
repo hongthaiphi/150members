@@ -18,15 +18,15 @@ export function StartConversationButton({ otherUserId }: StartConversationButton
   async function handleClick() {
     setLoading(true)
     try {
-      const convId = await getOrCreateConversation(otherUserId)
-      if (convId) {
-        router.push(`/messages/${convId}`)
+      const res = await getOrCreateConversation(otherUserId)
+      if (res.id) {
+        router.push(`/messages/${res.id}`)
       } else {
-        toast.error('Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
+        toast.error(res.error || 'Không thể mở cuộc trò chuyện. Vui lòng thử lại.')
       }
     } catch (err) {
       console.error('[StartConversationButton]', err)
-      toast.error('Đã xảy ra lỗi. Vui lòng thử lại.')
+      toast.error('Đã xảy ra lỗi: ' + (err instanceof Error ? err.message : String(err)))
     } finally {
       setLoading(false)
     }
