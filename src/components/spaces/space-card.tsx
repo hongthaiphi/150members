@@ -1,7 +1,5 @@
 import Link from 'next/link'
 import { Users, Lock } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 type SpaceCardProps = {
   id: string
@@ -16,36 +14,40 @@ type SpaceCardProps = {
 export function SpaceCard({ name, slug, description, icon, is_private, memberCount }: SpaceCardProps) {
   return (
     <Link href={`/spaces/${slug}`}>
-      <Card className="hover:shadow-md transition-shadow h-full">
-        <CardHeader className="pb-2">
-          <div className="flex items-start gap-3">
-            <div className="text-3xl w-10 h-10 flex items-center justify-center shrink-0">
-              {icon ?? name.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <CardTitle className="text-base">{name}</CardTitle>
-                {is_private && (
-                  <Badge variant="secondary" className="text-xs gap-1">
-                    <Lock className="h-2.5 w-2.5" /> Riêng tư
-                  </Badge>
-                )}
-              </div>
+      <div className="group relative bg-card border rounded-xl p-4 h-full hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl shrink-0 group-hover:bg-primary/15 transition-colors">
+            {icon ?? (
+              <span className="text-primary font-semibold text-base">
+                {name.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
+                {name}
+              </h3>
+              {is_private && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                  <Lock className="h-2.5 w-2.5" /> Riêng tư
+                </span>
+              )}
             </div>
           </div>
-        </CardHeader>
-        <CardContent>
-          {description && (
-            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{description}</p>
-          )}
-          {memberCount !== undefined && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Users className="h-3 w-3" />
-              {memberCount} thành viên
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {description && (
+          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{description}</p>
+        )}
+
+        {memberCount !== undefined && (
+          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <Users className="h-3 w-3" />
+            <span>{memberCount} thành viên</span>
+          </div>
+        )}
+      </div>
     </Link>
   )
 }

@@ -28,7 +28,7 @@ export function MobileSidebar({ spaces, profile }: MobileSidebarProps) {
   }, [pathname])
 
   return (
-    <div className="md:hidden fixed top-0 left-0 z-40 h-14 flex items-center px-3 gap-2 border-b bg-background w-full">
+    <div className="md:hidden fixed top-0 left-0 z-40 h-14 flex items-center px-3 gap-2 border-b bg-background/95 backdrop-blur-sm w-full">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none">
           <Menu className="h-5 w-5" />
@@ -38,7 +38,12 @@ export function MobileSidebar({ spaces, profile }: MobileSidebarProps) {
         </SheetContent>
       </Sheet>
 
-      <span className="font-semibold text-sm">Community</span>
+      <Link href="/" className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center shadow-sm">
+          <span className="text-primary-foreground text-[10px] font-bold">C</span>
+        </div>
+        <span className="font-semibold text-sm">Community</span>
+      </Link>
 
       <div className="flex-1" />
 

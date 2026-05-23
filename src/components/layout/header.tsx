@@ -33,20 +33,20 @@ export function Header({ profile }: HeaderProps) {
   }
 
   return (
-    <header className="hidden md:flex h-14 border-b items-center gap-3 px-4 shrink-0 bg-background">
-      <form onSubmit={handleSearch} className="flex-1 max-w-md">
+    <header className="hidden md:flex h-14 border-b items-center gap-3 px-5 shrink-0 bg-background/95 backdrop-blur-sm">
+      <form onSubmit={handleSearch} className="flex-1 max-w-sm">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Tìm kiếm bài viết, thành viên, spaces..."
-            className="pl-8 h-8 text-sm"
+            placeholder="Tìm kiếm..."
+            className="pl-8 h-8 text-sm bg-muted/50 border-transparent focus:border-input focus:bg-background transition-colors"
           />
         </div>
       </form>
 
-      <div className="flex items-center gap-2 ml-auto">
+      <div className="flex items-center gap-1.5 ml-auto">
         {profile ? (
           <>
             <NotificationBell />
@@ -55,10 +55,10 @@ export function Header({ profile }: HeaderProps) {
         ) : (
           <div className="flex items-center gap-2">
             <Link href="/login">
-              <Button variant="ghost" size="sm">Đăng nhập</Button>
+              <Button variant="ghost" size="sm" className="text-sm">Đăng nhập</Button>
             </Link>
             <Link href="/register">
-              <Button size="sm">Tham gia</Button>
+              <Button size="sm" className="text-sm">Tham gia</Button>
             </Link>
           </div>
         )}
