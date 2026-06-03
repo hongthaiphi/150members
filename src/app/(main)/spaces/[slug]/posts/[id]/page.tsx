@@ -40,7 +40,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const description = htmlToPlainText(post.content).slice(0, 160)
-  const url = `/spaces/${post.spaces.slug}/posts/${params.id}`
+  const path = `/spaces/${post.spaces.slug}/posts/${params.id}`
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
+  const url = siteUrl ? `${siteUrl}${path}` : path
 
   return {
     title: post.title,
@@ -50,9 +52,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: 'article',
       url,
+      siteName: 'Community',
     },
     twitter: {
-      card: 'summary',
+      card: 'summary_large_image',
       title: post.title,
       description,
     },
