@@ -33,7 +33,8 @@ export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   
   // Publicly accessible post detail path pattern: /spaces/[slug]/posts/[id]
-  const isPublicPostDetail = /^\/spaces\/[^/]+\/posts\/[^/]+$/.test(pathname)
+  // Also allow /spaces/[slug]/posts/[id]/opengraph-image for Telegram/OG crawlers
+  const isPublicPostDetail = /^\/spaces\/[^/]+\/posts\/[^/]+(?:\/opengraph-image)?$/.test(pathname)
   
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r)) && !isPublicPostDetail
   const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r))
