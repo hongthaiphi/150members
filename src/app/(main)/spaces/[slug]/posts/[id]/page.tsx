@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!member) return { title: 'Bài viết không tồn tại' }
   }
 
-  const description = htmlToPlainText(post.content).slice(0, 160)
+  const description = htmlToPlainText(post.content).slice(0, 300)
   const path = `/spaces/${post.spaces.slug}/posts/${params.id}`
   const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/$/, '')
   const url = siteUrl ? `${siteUrl}${path}` : path
