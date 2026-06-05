@@ -31,26 +31,26 @@ export function MobileSidebar({ spaces, profile, communityName = 'Community' }: 
   return (
     <div className="md:hidden fixed top-0 left-0 z-40 h-14 flex items-center px-3 gap-2 border-b bg-background/95 backdrop-blur-sm w-full">
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none">
+        <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors outline-none">
           <Menu className="h-5 w-5" />
         </SheetTrigger>
-        <SheetContent side="left" className="p-0 w-64">
+        <SheetContent side="left" className="p-0 w-72">
           <Sidebar spaces={spaces} profile={profile} communityName={communityName} className="flex h-full" />
         </SheetContent>
       </Sheet>
 
       <Link href="/" className="flex items-center gap-2">
-        <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center shadow-sm">
-          <span className="text-primary-foreground text-[10px] font-bold">C</span>
+        <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shadow-sm">
+          <span className="text-primary-foreground text-xs font-bold">C</span>
         </div>
-        <span className="font-semibold text-sm">{communityName}</span>
+        <span className="font-semibold text-base">{communityName}</span>
       </Link>
 
       <div className="flex-1" />
 
       <Link href="/search">
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Search className="h-4 w-4" />
+        <Button variant="ghost" size="icon" className="h-10 w-10">
+          <Search className="h-5 w-5" />
         </Button>
       </Link>
 
@@ -60,12 +60,12 @@ export function MobileSidebar({ spaces, profile, communityName = 'Community' }: 
           <UserMenu profile={profile} />
         </>
       ) : (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Link href="/login">
-            <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">Đăng nhập</Button>
+            <Button variant="ghost" size="sm" className="h-9 px-3 text-sm">Đăng nhập</Button>
           </Link>
           <Link href="/register">
-            <Button size="sm" className="h-8 px-2 text-xs">Tham gia</Button>
+            <Button size="sm" className="h-9 px-3 text-sm">Tham gia</Button>
           </Link>
         </div>
       )}

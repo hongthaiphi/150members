@@ -6,7 +6,6 @@ import { formatDistanceToNow } from 'date-fns'
 import { vi } from 'date-fns/locale'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Pin, Loader2 } from 'lucide-react'
 import { loadMorePosts, type PostItem } from '@/lib/actions/posts'
 
@@ -39,35 +38,41 @@ export function LoadMorePosts({ spaceId, spaceSlug, initialPosts, pageSize = 20 
     <>
       <div className="space-y-4">
         {posts.map(post => (
-          <Card key={post.id} className="hover:shadow-sm transition-shadow">
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Avatar className="h-7 w-7">
-                  <AvatarImage src={post.profiles?.avatar_url ?? undefined} />
-                  <AvatarFallback className="text-xs">
-                    {(post.profiles?.display_name ?? post.profiles?.username ?? '?').charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <Link href={`/profile/${post.profiles?.username}`} className="text-sm font-medium hover:underline">
-                  {post.profiles?.display_name ?? post.profiles?.username}
-                </Link>
-                <span className="text-xs text-muted-foreground ml-auto">
+          <article
+            key={post.id}
+            className="group bg-card border rounded-xl p-4 hover:shadow-sm hover:border-border/80 transition-all duration-150"
+          >
+            <div className="flex items-center gap-2.5 mb-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarImage src={post.profiles?.avatar_url ?? undefined} />
+                <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
+                  {(post.profiles?.display_name ?? post.profiles?.username ?? '?').charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <Link href={`/profile/${post.profiles?.username}`} className="text-sm font-medium hover:underline truncate">
+                {post.profiles?.display_name ?? post.profiles?.username}
+              </Link>
+              <div className="flex items-center gap-1.5 ml-auto shrink-0">
+                {post.is_pinned && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                    <Pin className="h-3 w-3" /> Ghim
+                  </span>
+                )}
+                <span className="text-sm text-muted-foreground">
                   {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })}
                 </span>
-                {post.is_pinned && <Pin className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
-              <CardTitle className="text-base">
-                <Link href={`/spaces/${spaceSlug}/posts/${post.id}`} className="hover:underline">
-                  {post.title}
-                </Link>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground line-clamp-2">
+            </div>
+
+            <Link href={`/spaces/${spaceSlug}/posts/${post.id}`}>
+              <h2 className="text-base font-semibold leading-snug group-hover:text-primary transition-colors mb-1.5">
+                {post.title}
+              </h2>
+              <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                 {post.content.replace(/<[^>]+>/g, '').slice(0, 200)}
               </p>
-            </CardContent>
-          </Card>
+            </Link>
+          </article>
         ))}
       </div>
 

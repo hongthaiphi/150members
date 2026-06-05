@@ -25,12 +25,12 @@ export function SpaceCard({ name, slug, description, icon, is_private, memberCou
           </div>
           <div className="min-w-0 flex-1 pt-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-semibold text-sm leading-tight group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors">
                 {name}
               </h3>
               {is_private && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
-                  <Lock className="h-2.5 w-2.5" /> Riêng tư
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">
+                  <Lock className="h-3 w-3" /> Riêng tư
                 </span>
               )}
             </div>
@@ -38,12 +38,12 @@ export function SpaceCard({ name, slug, description, icon, is_private, memberCou
         </div>
 
         {description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{description}</p>
+          <p className="text-sm text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{description}</p>
         )}
 
         {memberCount !== undefined && (
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Users className="h-3 w-3" />
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Users className="h-3.5 w-3.5" />
             <span>{memberCount} thành viên</span>
           </div>
         )}

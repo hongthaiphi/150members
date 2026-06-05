@@ -85,16 +85,16 @@ export function Sidebar({ spaces, profile, communityName = 'Community', classNam
           {/* Spaces */}
           <div className="pt-4">
             <div className="flex items-center justify-between px-3 mb-1.5">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                 Spaces
               </span>
               <Link href="/spaces/new">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-5 w-5 text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
-                  <Plus className="h-3 w-3" />
+                  <Plus className="h-3.5 w-3.5" />
                 </Button>
               </Link>
             </div>
@@ -144,7 +144,7 @@ export function Sidebar({ spaces, profile, communityName = 'Community', classNam
                 <p className="text-sm font-medium truncate leading-tight">
                   {profile.display_name ?? profile.username}
                 </p>
-                <p className="text-[11px] text-muted-foreground truncate">@{profile.username}</p>
+                <p className="text-xs text-muted-foreground truncate">@{profile.username}</p>
               </div>
             </Link>
             <Link

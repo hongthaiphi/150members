@@ -89,7 +89,7 @@ export default async function SpaceDetailPage({ params }: Props) {
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Cover image */}
       {space.cover_image && (
-        <div className="relative h-40 rounded-xl overflow-hidden mb-6">
+        <div className="relative h-36 sm:h-48 rounded-xl overflow-hidden mb-6">
           <Image
             src={space.cover_image}
             alt={space.name}
@@ -102,12 +102,12 @@ export default async function SpaceDetailPage({ params }: Props) {
       )}
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 mb-4">
+      <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-4xl">{space.icon ?? space.name.charAt(0)}</span>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold">{space.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-bold">{space.name}</h1>
               {space.is_private && (
                 <Badge variant="secondary" className="gap-1">
                   <Lock className="h-3 w-3" /> Riêng tư
@@ -124,8 +124,9 @@ export default async function SpaceDetailPage({ params }: Props) {
         <div className="flex items-center gap-2 shrink-0">
           {canManage && (
             <Link href={`/spaces/${space.slug}/settings`}>
-              <Button variant="outline" size="sm" className="gap-1.5">
-                <Settings className="h-3.5 w-3.5" /> Cài đặt
+              <Button variant="outline" size="sm" className="gap-1.5 h-9">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Cài đặt</span>
               </Button>
             </Link>
           )}
@@ -139,14 +140,14 @@ export default async function SpaceDetailPage({ params }: Props) {
           )}
           {isMember && (
             <Link href={`/spaces/${space.slug}/posts/new`}>
-              <Button size="sm">+ Đăng bài</Button>
+              <Button size="sm" className="h-9">+ Đăng bài</Button>
             </Link>
           )}
         </div>
       </div>
 
       {space.description && (
-        <p className="text-muted-foreground text-sm mb-4">{space.description}</p>
+        <p className="text-muted-foreground text-sm sm:text-base mb-4">{space.description}</p>
       )}
 
       <Separator className="mb-6" />

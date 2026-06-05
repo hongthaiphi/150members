@@ -227,7 +227,7 @@ export default async function PostDetailPage({ params }: Props) {
             <Link href={`/profile/${post.profiles?.username}`} className="text-sm font-medium hover:underline">
               {post.profiles?.display_name ?? post.profiles?.username}
             </Link>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })}
               {post.updated_at !== post.created_at && ' · đã sửa'}
             </p>

@@ -83,8 +83,9 @@
 }
 
 /* TipTap / prose content styles */
-.prose h2 { @apply text-xl font-bold mt-6 mb-3; }
-.prose h3 { @apply text-lg font-semibold mt-5 mb-2; }
+.prose { @apply text-base leading-relaxed; }
+.prose h2 { @apply text-lg sm:text-xl font-bold mt-6 mb-3; }
+.prose h3 { @apply text-base sm:text-lg font-semibold mt-5 mb-2; }
 .prose p { @apply mb-3 leading-relaxed; }
 .prose ul { @apply list-disc pl-5 mb-3 space-y-1; }
 .prose ol { @apply list-decimal pl-5 mb-3 space-y-1; }
