@@ -46,10 +46,10 @@ export default async function HomePage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight">Bảng tin</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Bài viết mới nhất từ các Space của bạn</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Bài viết mới nhất từ các Space của bạn</p>
         </div>
         <Link href="/spaces">
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+          <Button variant="outline" size="sm" className="gap-1.5">
             Khám phá Spaces
           </Button>
         </Link>
@@ -67,15 +67,15 @@ export default async function HomePage() {
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {posts.map((post) => (
             <article
               key={post.id}
               className="group bg-card border rounded-xl p-4 hover:shadow-sm hover:border-border/80 transition-all duration-150"
             >
-              <div className="flex items-start justify-between gap-2 mb-2.5">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Avatar className="h-7 w-7 shrink-0">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarImage src={post.profiles?.avatar_url ?? undefined} />
                     <AvatarFallback className="text-xs bg-primary/10 text-primary font-semibold">
                       {(post.profiles?.display_name ?? post.profiles?.username ?? '?').charAt(0).toUpperCase()}
@@ -96,21 +96,21 @@ export default async function HomePage() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   {post.is_pinned && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-                      <Pin className="h-2.5 w-2.5" /> Ghim
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 dark:bg-amber-950/30 px-1.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
+                      <Pin className="h-3 w-3" /> Ghim
                     </span>
                   )}
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: vi })}
                   </span>
                 </div>
               </div>
 
               <Link href={`/spaces/${post.spaces?.slug}/posts/${post.id}`}>
-                <h2 className="text-sm font-semibold leading-snug group-hover:text-primary transition-colors mb-1.5">
+                <h2 className="text-base font-semibold leading-snug group-hover:text-primary transition-colors mb-1.5">
                   {post.title}
                 </h2>
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                   {post.content.replace(/<[^>]+>/g, '').slice(0, 200)}
                 </p>
               </Link>
