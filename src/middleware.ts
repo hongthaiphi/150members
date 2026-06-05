@@ -35,8 +35,10 @@ export async function middleware(request: NextRequest) {
   // Publicly accessible post detail path pattern: /spaces/[slug]/posts/[id]
   // Also allow /spaces/[slug]/posts/[id]/opengraph-image for Telegram/OG crawlers
   const isPublicPostDetail = /^\/spaces\/[^/]+\/posts\/[^/]+(?:\/opengraph-image)?$/.test(pathname)
-  
-  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r)) && !isPublicPostDetail
+  // Share token pages are always public
+  const isSharePage = pathname.startsWith('/share/')
+
+  const isProtected = protectedRoutes.some((r) => pathname.startsWith(r)) && !isPublicPostDetail && !isSharePage
   const isAuthRoute = authRoutes.some((r) => pathname.startsWith(r))
 
   function redirectWithCookies(url: URL) {

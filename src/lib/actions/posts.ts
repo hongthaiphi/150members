@@ -28,12 +28,6 @@ function sanitizeContent(html: string): string {
   return sanitizeHtml(html, SANITIZE_OPTIONS)
 }
 
-// Strip HTML to plain text for meta descriptions
-function htmlToPlainText(html: string): string {
-  return sanitizeHtml(html, { allowedTags: [], allowedAttributes: {} })
-    .replace(/\s+/g, ' ')
-    .trim()
-}
 
 export type PostFormData = {
   title: string
@@ -289,5 +283,36 @@ export async function loadMorePosts(
   return { posts: (data ?? []) as unknown as PostItem[] }
 }
 
-// Export helper for post detail page to use
-export { htmlToPlainText }
+// Generate (or reuse existing) share token for a private space post
+export async function generateShareToken(postId: string): Promise<{ token?: string; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Chưa đăng nhập' }
+
+  // Verify user is a member of the space this post belongs to
+  const { data: post } = await supabase
+    .from('posts')
+    .select('space_id, spaces!space_id(is_private)')
+    .eq('id', postId)
+    .single()
+  const row = post as { space_id: string; spaces: { is_private: boolean } | null } | null
+  if (!row) return { error: 'Bài viết không tồn tại' }
+
+  const { data: member } = await supabase
+    .from('space_members')
+    .select('user_id')
+    .eq('space_id', row.space_id)
+    .eq('user_id', user.id)
+    .single()
+  if (!member) return { error: 'Chỉ thành viên của Space mới có thể tạo link chia sẻ' }
+
+  // Upsert — reuse existing token for same post+user pair
+  const { data: tokenRow, error } = await supabase
+    .from('post_share_tokens')
+    .upsert({ post_id: postId, created_by: user.id }, { onConflict: 'post_id,created_by', ignoreDuplicates: false })
+    .select('token')
+    .single()
+
+  if (error) return { error: error.message }
+  return { token: tokenRow.token }
+}

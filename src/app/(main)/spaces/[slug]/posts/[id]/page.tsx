@@ -13,7 +13,7 @@ import { Pin } from 'lucide-react'
 import type { Metadata } from 'next'
 import type { UserRole } from '@/types/database'
 import type { CommentData } from '@/components/comments/comment-item'
-import { htmlToPlainText } from '@/lib/actions/posts'
+import { htmlToPlainText } from '@/lib/html-utils'
 
 interface Props { params: { slug: string; id: string } }
 
@@ -243,6 +243,8 @@ export default async function PostDetailPage({ params }: Props) {
               initialLikeCount={countReactions(post.id)}
               initialLiked={userLiked(post.id)}
               isGuest={!user}
+              isPrivateSpace={space.is_private}
+              isMember={isMember}
             />
           </div>
         </div>
