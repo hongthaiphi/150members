@@ -368,6 +368,37 @@ export interface Database {
           }
         ]
       }
+      post_share_tokens: {
+        Row: {
+          token: string
+          post_id: string
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          token?: string
+          post_id: string
+          created_by: string
+          created_at?: string
+        }
+        Update: Record<string, never>
+        Relationships: [
+          {
+            foreignKeyName: "post_share_tokens_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_share_tokens_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

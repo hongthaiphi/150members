@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { toast } from 'sonner'
-import { MoreHorizontal, Edit, Trash2, Pin, PinOff, Share2, ThumbsUp } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Pin, PinOff, Share2, ThumbsUp, Link2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { deletePost, togglePin, toggleReaction } from '@/lib/actions/posts'
+import { deletePost, togglePin, toggleReaction, generateShareToken } from '@/lib/actions/posts'
 
 interface PostActionsProps {
   postId: string
@@ -22,6 +22,8 @@ interface PostActionsProps {
   initialLikeCount: number
   initialLiked: boolean
   isGuest?: boolean
+  isPrivateSpace?: boolean
+  isMember?: boolean
 }
 
 export function PostActions({
@@ -33,10 +35,13 @@ export function PostActions({
   initialLikeCount,
   initialLiked,
   isGuest = false,
+  isPrivateSpace = false,
+  isMember = false,
 }: PostActionsProps) {
   const [likeCount, setLikeCount] = useState(initialLikeCount)
   const [liked, setLiked] = useState(initialLiked)
   const [pending, startTransition] = useTransition()
+  const [shareTokenPending, setShareTokenPending] = useState(false)
 
   function handleLike() {
     if (isGuest) {
@@ -75,6 +80,20 @@ export function PostActions({
     toast.success('Đã copy link bài viết')
   }
 
+  async function handlePrivateShare() {
+    setShareTokenPending(true)
+    try {
+      const res = await generateShareToken(postId)
+      if (res.error) { toast.error(res.error); return }
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin).replace(/\/$/, '')
+      const link = `${siteUrl}/share/${res.token}`
+      await navigator.clipboard.writeText(link)
+      toast.success('Đã copy link chia sẻ — ai cũng đọc được!')
+    } finally {
+      setShareTokenPending(false)
+    }
+  }
+
   return (
     <div className="flex items-center gap-2">
       {/* Like button */}
@@ -94,6 +113,20 @@ export function PostActions({
         <Share2 className="h-4 w-4" />
         Chia sẻ
       </Button>
+
+      {/* Private share token — only shown to members of private spaces */}
+      {isPrivateSpace && isMember && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1.5"
+          onClick={handlePrivateShare}
+          disabled={shareTokenPending}
+        >
+          <Link2 className="h-4 w-4" />
+          Link chia sẻ
+        </Button>
+      )}
 
       {/* More actions (author / admin) */}
       {(isAuthor || canManage) && (
